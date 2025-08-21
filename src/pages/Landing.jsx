@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const Home = () => {
+const Landing = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
       <h1 className="text-3xl font-bold text-gray-700 mb-6">
@@ -17,4 +17,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Landing;
