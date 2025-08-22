@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { getAllData } from './util/index';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
