@@ -1,25 +1,40 @@
 import axios from "axios";
- 
-// note: not used, but could be used with GET with params
- const getData = async (url, params) => {
-    try {
-      let res = await axios.get(url, params);
-      let data = await res.data;
-      return data;
-    } catch (error) {
-      console.log(error, `error - getData in ${url} route`);
-    }
-  };
 
-  const getAllData = async (url) => {
-    try {
-      let res = await axios.get(url);
-      let data = await res.data;
-      return data;
-    } catch (error) {
-      console.log(error, `error - getAllData in ${url} route`);
-    }
-  };
+const API = axios.create({
+  baseURL: "http://localhost:8000/api/v1",
+});
 
+// GET with params
+const getData = async (endpoint, params = {}) => {
+  try {
+    const res = await API.get(endpoint, { params });
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - getData in ${endpoint} route`);
+    throw error;
+  }
+};
 
-  export {getData, getAllData};
+// GET all
+const getAllData = async (endpoint) => {
+  try {
+    const res = await API.get(endpoint);
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - getAllData in ${endpoint} route`);
+    throw error;
+  }
+};
+
+// POST 
+const postData = async (endpoint, body = {}, config = {}) => {
+  try {
+    const res = await API.post(endpoint, body, config);
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - postData in ${endpoint} route`);
+    throw error;
+  }
+};
+
+export { API, getData, getAllData, postData };
