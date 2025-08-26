@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { postData } from "../util/index";
-import logo from "../assets/logo.svg";
-import AuthLayout from "../components/AuthLayout";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -55,7 +54,7 @@ const handleGoogleLogin = () => {
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md relative">
           <span className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer">&times;</span>
 
-          <h2 className="text-2xl font-bold text-black text-center mb-2">Join the quest</h2>
+          <h2 className="text-2xl font-bold text-black text-center mb-2">Join the Quest</h2>
           <p className="text-gray-600 text-center mb-4">Create your PeerQuests account</p>
 
           {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
