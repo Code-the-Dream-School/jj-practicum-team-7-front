@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { postData } from "../util/index";
 import logo from "../assets/logo.svg";
+import AuthLayout from "../components/AuthLayout";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -44,76 +45,93 @@ const Register = () => {
       setLoading(false);
     }
   };
+const handleGoogleLogin = () => {
+    // TODO: Replace with backend Google OAuth URL or Firebase
+    window.location.href = "http://localhost:8000/api/v1/auth/google";
+  };
 
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md relative">
-        <span className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer">&times;</span>
+   return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md relative">
+          <span className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer">&times;</span>
 
-        {/* Logo */}
-        <img
-          src={logo}
-          alt="App Logo"
-          className="w-45 h-40 mx-auto mb-4"
-          style={{ clipPath: "inset(0 0 0 5px)" }}
-        />
+          <h2 className="text-2xl font-bold text-black text-center mb-2">Join the quest</h2>
+          <p className="text-gray-600 text-center mb-4">Create your PeerQuests account</p>
 
-        <h2 className="text-2xl font-bold text-black text-center mb-2">Join the quest</h2>
-        <p className="text-gray-600 text-center mb-4">Create your PeerQuests account</p>
+          {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Username / Nickname"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-3 border rounded-lg"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border rounded-lg"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border rounded-lg"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border rounded-lg"
+              required
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-60"
+            >
+              {loading ? "Creating account..." : "Start now"}
+            </button>
+          </form>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username / Nickname"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
+          {/* Divider */}
+          <div className="flex items-center my-4">
+            <hr className="flex-grow border-gray-300" />
+            <span className="px-2 text-gray-500 text-sm">or</span>
+            <hr className="flex-grow border-gray-300" />
+          </div>
+
+          {/* Google login */}
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-60"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-100 transition"
           >
-            {loading ? "Creating account..." : "Start now"}
+            <img
+              src="https://www.svgrepo.com/show/355037/google.svg"
+              alt="Google logo"
+              className="w-5 h-5"
+            />
+            Continue with Google
           </button>
-        </form>
 
-        <p className="mt-4 text-center text-sm text-black">
-          Already have an account?{" "}
-          <Link to="/login" className="text-green-600 hover:underline">
-            Sign in
-          </Link>
-        </p>
+          <p className="mt-4 text-center text-sm text-black">
+            Already have an account?{" "}
+            <Link to="/login" className="text-green-600 hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
   );
 };
+
 
 export default Register;

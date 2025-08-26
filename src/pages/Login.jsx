@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { postData } from "../util/index";
-import logo from "../assets/logo.svg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ const Login = () => {
       const res = await postData("/auth/login", { email, password });
       if (res.token) {
         localStorage.setItem("authToken", res.token);
-        navigate("/dashboard"); 
+        navigate("/dashboard");
       }
     } catch (err) {
       console.error(err);
@@ -29,18 +28,17 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8000/api/v1/auth/google";
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md relative">
-        <span className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer">&times;</span>
-
-        {/* Logo */}
-        <img src={logo} alt="App Logo" className="w-45 h-40 mx-auto mb-6" style={{ clipPath: 'inset(0 0 0 5px)' }} />
-
         <h2 className="text-2xl font-bold text-black text-center mb-2">Welcome back</h2>
         <p className="text-gray-600 text-center mb-6">Sign in to your account</p>
 
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -67,6 +65,26 @@ const Login = () => {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="px-2 text-gray-500 text-sm">or</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        {/* Google login */}
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-100 transition"
+        >
+          <img
+            src="https://www.svgrepo.com/show/355037/google.svg"
+            alt="Google logo"
+            className="w-5 h-5"
+          />
+          Continue with Google
+        </button>
 
         <p className="mt-4 text-center text-sm text-black">
           Don&apos;t have an account?{" "}
