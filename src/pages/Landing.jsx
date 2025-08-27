@@ -17,7 +17,7 @@ const Landing = () => {
 
       {/* Hero Section */}
       <div className="relative text-white px-12 md:px-24">
-        <div className="relative w-full h-[400px]">
+        <div className="relative w-full h-[400px] rounded-xl shadow-xl overflow-hidden">
           <img
             src="images/hero_img.jpg"
             alt="PeersQuests hero image"
@@ -37,7 +37,7 @@ const Landing = () => {
             to="/login"
             className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300"
           >
-            Go to Login
+            Join the Quest
           </Link>
         </div>
       </div>
@@ -128,7 +128,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
-
-
-
