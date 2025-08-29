@@ -29,8 +29,8 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/api/v1/auth/google";
-  };
+  window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">

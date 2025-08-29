@@ -15,40 +15,60 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (password.length < 6) {
-    setError("Password must be at least 6 characters long.");
-    return;
-  }
+    setLoading(true);
 
+    // Validate passwords match
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+      setError("Passwords do not match");
+      setLoading(false);
       return;
     }
-    
-    setLoading(true);
+
+    // Validate password length
+    if (password.length < 6) {
+      setError("Invalid password format: must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log("Sending register request:", { username: name.trim(), email: email.trim().toLowerCase(), password });
       const res = await postData("/auth/register", {
         username: name.trim(),
         email: email.trim().toLowerCase(),
-        password: password,
+        password,
       });
+      console.log("Register response:", res);
 
-      if (res.token) {
-        localStorage.setItem("authToken", res.token);
-        navigate("/login");
+      if (res.success) {
+        console.log("Registration successful, redirecting to /login");
+        navigate("/login", { replace: true });
+      } else {
+        setError("Registration failed: No success response from server");
       }
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Registration failed");
+      console.error("Registration error:", err.response?.data || err);
+      const errorMessage = err.response?.data?.message || "Registration failed";
+      setError(
+        errorMessage.includes("email")
+          ? "Email already registered"
+          : errorMessage.includes("username")
+          ? "Username already taken"
+          : errorMessage.includes("password")
+          ? "Invalid password format: must be at least 6 characters long"
+          : errorMessage.includes("required")
+          ? "Username, email, and password are required"
+          : errorMessage
+      );
     } finally {
       setLoading(false);
     }
   };
 const handleGoogleLogin = () => {
-    // TODO: Replace with backend Google OAuth URL or Firebase
-    window.location.href = "http://localhost:8000/api/v1/auth/google";
+    console.log("Initiating Google login");
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
   };
-
+  
    return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md relative">
