@@ -3,6 +3,20 @@ import axios from "axios";
 const API = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/v1`,
 });
+
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // GET with params
 const getData = async (endpoint, params = {}) => {
   try {
@@ -25,7 +39,7 @@ const getAllData = async (endpoint) => {
   }
 };
 
-// POST 
+// POST
 const postData = async (endpoint, body = {}, config = {}) => {
   try {
     const res = await API.post(endpoint, body, config);
