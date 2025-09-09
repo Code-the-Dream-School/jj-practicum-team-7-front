@@ -49,6 +49,9 @@ const ChallengeDetails = ({ challenge, onClose }) => {
   const displayCurrentDay =
     checkInData?.currentDay > 0 ? checkInData.currentDay : 1;
 
+  const challengeEnded =
+    challenge.status === "completed" || challenge.status === "failed";
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 relative">
@@ -67,15 +70,19 @@ const ChallengeDetails = ({ challenge, onClose }) => {
         {/* Check In Button */}
         <button
           onClick={handleCheckIn}
-          disabled={!canCheckIn || checkInLoading}
+          disabled={!canCheckIn || checkInLoading || challengeEnded}
           className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
-            canCheckIn && !checkInLoading
+            canCheckIn && !checkInLoading && !challengeEnded
               ? "bg-green-600 text-white hover:bg-green-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
           {checkInLoading
             ? "Checking in..."
+            : challengeEnded
+            ? challenge.status === "completed"
+              ? "Challenge Completed"
+              : "Challenge Failed"
             : canCheckIn
             ? "Check In Today"
             : "Already Checked In"}
