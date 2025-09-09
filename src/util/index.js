@@ -28,7 +28,13 @@ const getAllData = async (endpoint) => {
 // POST 
 const postData = async (endpoint, body = {}, config = {}) => {
   try {
-    const res = await API.post(endpoint, body, config);
+    const token = localStorage.getItem("authToken");
+    const headers = {
+      ...config.headers,
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }), 
+    };
+    const res = await API.post(endpoint, body, { ...config, headers });
     return res.data;
   } catch (error) {
     console.error(error, `error - postData in ${endpoint} route`);
