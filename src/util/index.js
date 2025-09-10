@@ -6,7 +6,11 @@ const API = axios.create({
 // GET with params
 const getData = async (endpoint, params = {}) => {
   try {
-    const res = await API.get(endpoint, { params });
+    const token = localStorage.getItem("authToken");
+    const res = await API.get(endpoint, {
+      params,
+      headers: { Authorization: token ? `Bearer ${token}` : "" },
+    });
     return res.data;
   } catch (error) {
     console.error(error, `error - getData in ${endpoint} route`);
