@@ -14,7 +14,7 @@ const categories = [
   "Other",
 ];
 
-const CreateChallengeModal = () =>{
+const CreateChallengeModal = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -31,7 +31,7 @@ const CreateChallengeModal = () =>{
       try {
         const res = await getData("/users");
         const filteredUsers = res.users.filter(
-          user => user._id !== currentUserId
+          (user) => user._id !== currentUserId
         );
         setUsers(filteredUsers);
       } catch (err) {
@@ -46,11 +46,11 @@ const CreateChallengeModal = () =>{
     e.preventDefault();
     setError("");
     setLoading(true);
-if (invited.length === 0) {
-  alert("Select at least one friend to invite!");
-  setLoading(false);
-  return;
-}
+    if (invited.length === 0) {
+      alert("Select at least one friend to invite!");
+      setLoading(false);
+      return;
+    }
     try {
       const data = {
         title,
@@ -67,95 +67,242 @@ if (invited.length === 0) {
       setLoading(false);
     }
   };
+  //   return (
+  //     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen">
+  //       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full relative">
+  //         <span
+  //           className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer"
+  //           onClick={() => navigate("/login")}
+  //         >
+  //           &times;
+  //         </span>
+  //         <h2 className="text-2xl font-bold text-black text-center mb-2">
+  //           Create a Challenge
+  //         </h2>
+  //         <form className="space-y-4" onSubmit={handleSubmit}>
+  //           {/* Title */}
+  //           <div>
+  //             <label className="text-gray-600 block mb-1">Title</label>
+  //             <input
+  //               type="text"
+  //               value={title}
+  //               onChange={(e) => setTitle(e.target.value)}
+  //               required
+  //               minLength="5"
+  //               maxLength="50"
+  //               className="w-full p-3 border rounded-lg"
+  //             />
+  //           </div>
+  //           {/* Category */}
+  //           <div>
+  //             <label className="text-gray-600 block mb-1">Category</label>
+  //             <select
+  //               value={category}
+  //               onChange={(e) => setCategory(e.target.value)}
+  //               required
+  //               className="w-full p-3 border rounded-lg"
+  //             >
+  //               <option value="">Choose a category</option>
+  //               {categories.map((cat) => (
+  //                 <option key={cat} value={cat}>
+  //                   {cat}
+  //                 </option>
+  //               ))}
+  //             </select>
+  //           </div>
+  //           {/* Duration */}
+  //           <div>
+  //             <label className="text-gray-600 block mb-1">Duration(days)</label>
+  //             <input
+  //               type="number"
+  //               value={duration}
+  //               onChange={(e) => {
+  //                 const value = e.target.value;
+  //                 if (
+  //                   value === "" ||
+  //                   (Number(value) >= 1 && Number(value) <= 10)
+  //                 ) {
+  //                   setDuration(value);
+  //                 }
+  //               }}
+  //               required
+  //               min="1"
+  //               max="10"
+  //               className="w-full p-3 border rounded-lg"
+  //             />
+  //           </div>
+  //           {/* Invited */}
+  //           <div>
+  //             <label className="text-gray-600 block mb-1">Invite Friends</label>
+  //             <Select
+  //               isMulti
+  //               options={users.map((user) => ({
+  //                 value: user._id,
+  //                 label: user.username || user.email,
+  //               }))}
+  //               onChange={(selectedOptions) =>
+  //                 setInvited(selectedOptions.map((option) => option.value))
+  //               }
+  //               placeholder="Select friends to invite..."
+  //             />
+  //           </div>
+  //           <button
+  //             type="submit"
+  //             disabled={loading}
+  //             className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-60"
+  //           >
+  //             {loading ? "Creating..." : "Create"}
+  //           </button>
+  //         </form>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  // export default CreateChallengeModal
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen">
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full relative">
-        <span
-          className="absolute top-2 right-2 text-gray-400 text-xl cursor-pointer"
-          onClick={() => navigate("/login")}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen z-50">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300"></div>
+      <div className="absolute -top-16 -left-16 w-40 h-40 bg-green-400/20 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl"></div>
+
+      <div className="relative w-full max-w-md bg-white/70 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/30">
+        <div className="absolute inset-0 rounded-3xl border border-transparent bg-gradient-to-tr from-green-400/20 via-transparent to-blue-400/20 pointer-events-none"></div>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="absolute top-3 right-4 text-gray-400 text-2xl hover:text-gray-600 transition"
         >
           &times;
-        </span>
-        <h2 className="text-2xl font-bold text-black text-center mb-2">
+        </button>
+
+        <h2 className="text-2xl font-bold text-black text-center mb-2 relative z-10">
           Create a Challenge
         </h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <p className="text-gray-600 text-center mb-6 relative z-10">
+          Set up your next quest and invite friends
+        </p>
+
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center relative z-10">
+            {error}
+          </p>
+        )}
+
+        <form className="space-y-4 relative z-10" onSubmit={handleSubmit}>
           {/* Title */}
-          <div>
-            <label className="text-gray-600 block mb-1">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              minLength="5"
-              maxLength="50"
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Challenge title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            minLength="5"
+            maxLength="50"
+            className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm 
+                       focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
+          />
+
           {/* Category */}
-          <div>
-            <label className="text-gray-600 block mb-1">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              className="w-full p-3 border rounded-lg"
-            >
-              <option value="">Choose a category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+            className="w-full p-3 rounded-xl bg-white border border-gray-200 shadow-sm 
+             focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition 
+             text-gray-700 appearance-none"
+          >
+            <option value="">Choose a category</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
           {/* Duration */}
-          <div>
-            <label className="text-gray-600 block mb-1">Duration(days)</label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (
-                  value === "" ||
-                  (Number(value) >= 1 && Number(value) <= 10)
-                ) {
-                  setDuration(value);
-                }
-              }}
-              required
-              min="1"
-              max="10"
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
-          {/* Invited */}
-          <div>
-            <label className="text-gray-600 block mb-1">Invite Friends</label>
-            <Select
-              isMulti
-              options={users.map((user) => ({
-                value: user._id,
-                label: user.username || user.email,
-              }))}
-              onChange={(selectedOptions) =>
-                setInvited(selectedOptions.map((option) => option.value))
+          <input
+            type="number"
+            placeholder="Duration (1-10 days)"
+            value={duration}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || (Number(value) >= 1 && Number(value) <= 10)) {
+                setDuration(value);
               }
-              placeholder="Select friends to invite..."
-            />
-          </div>
+            }}
+            required
+            min="1"
+            max="10"
+            className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm 
+                       focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
+          />
+
+          {/* Invited */}
+          <Select
+            isMulti
+            options={users.map((user) => ({
+              value: user._id,
+              label: user.username || user.email,
+            }))}
+            onChange={(selectedOptions) =>
+              setInvited(selectedOptions.map((option) => option.value))
+            }
+            placeholder="Select friends to invite..."
+            className="text-sm"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                backgroundColor: "rgba(255,255,255,0.8)",
+                borderRadius: "0.75rem",
+                borderColor: state.isFocused ? "#4ade80" : "#e5e7eb",
+                boxShadow: state.isFocused ? "0 0 0 2px #4ade80" : "none",
+                padding: "2px",
+                "&:hover": {
+                  borderColor: "#4ade80",
+                },
+              }),
+              multiValue: (base) => ({
+                ...base,
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "0.5rem",
+                paddingLeft: "4px",
+                paddingRight: "4px",
+              }),
+              multiValueLabel: (base) => ({
+                ...base,
+                color: "#374151",
+                fontWeight: 500,
+              }),
+              multiValueRemove: (base) => ({
+                ...base,
+                color: "#6b7280",
+                ":hover": {
+                  backgroundColor: "#f3f4f6",
+                  color: "#374151",
+                },
+              }),
+              menu: (base) => ({
+                ...base,
+                borderRadius: "0.75rem",
+                backgroundColor: "white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }),
+            }}
+          />
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-60"
+            className="w-full bg-green-600 text-white py-3 rounded-xl shadow-md 
+                       hover:bg-green-700 hover:scale-[1.01] transition disabled:opacity-60"
           >
-            {loading ? "Creating..." : "Create"}
+            {loading ? "Creating..." : "Create Challenge"}
           </button>
         </form>
       </div>
     </div>
   );
-}
-export default CreateChallengeModal
+};
+
+export default CreateChallengeModal;
