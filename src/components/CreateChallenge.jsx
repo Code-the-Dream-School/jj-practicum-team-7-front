@@ -46,8 +46,29 @@ const CreateChallengeModal = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    if (!title.trim()) {
+      setError("Title is required");
+      setLoading(false);
+      return;
+    }
+    if (title.length < 5) {
+      setError("Title must be at least 5 characters");
+      setLoading(false);
+      return;
+    }
+    if (!category) {
+      setError("Please choose a category");
+      setLoading(false);
+      return;
+    }
+    if (!duration || duration < 1 || duration > 10) {
+      setError("Please set a duration between 1 and 10 days");
+      setLoading(false);
+      return;
+    }
     if (invited.length === 0) {
-      alert("Select at least one friend to invite!");
+      setError("Please select at least one friend to invite!");
       setLoading(false);
       return;
     }
@@ -96,7 +117,7 @@ const CreateChallengeModal = () => {
           </p>
         )}
 
-        <form className="space-y-4 relative z-10" onSubmit={handleSubmit}>
+        <form className="space-y-4 relative z-10" onSubmit={handleSubmit} noValidate>
           {/* Title */}
           <input
             type="text"
