@@ -6,6 +6,9 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [loading, setLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fetchCheckIns = async () => {
     if (!challenge?._id) return;
@@ -72,6 +75,18 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
       0
     );
     return gradients[hash % gradients.length];
+  };
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    setComments((prev) => [...prev, { id: Date.now(), text: newComment }]);
+    setNewComment("");
+  };
+
+  const handleDeleteChallenge = () => {
+    console.log("Challenge deleted for current user only:", challenge._id);
+    setShowDeleteModal(false);
+    onClose(); // Close modal after deletion
   };
 
   return (
@@ -354,6 +369,83 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
             ? "Check In Today"
             : "Already Checked In"}
         </button>
+
+        <hr className="border-gray-300 border mt-2 mb-4" />
+
+        {/* Comments Section */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Comments</h3>
+          <div className="flex gap-2 mb-2">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="Add a comment..."
+            />
+            <button
+              onClick={handleAddComment}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Submit
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {comments.map((c) => (
+              <li key={c.id} className="p-2 bg-gray-100 rounded-md">
+                {c.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Delete Challenge */}
+        {challenge.createdBy === currentUserId && (
+          <div className="mb-6 flex justify-center">
+            <p>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowDeleteModal(true);
+                }}
+                className="text-red-400 hover:underline"
+              >
+                Delete Challenge
+              </a>
+            </p>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-4">
+                Are you sure you want to delete this challenge?
+              </h3>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleDeleteChallenge}
+                  className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
