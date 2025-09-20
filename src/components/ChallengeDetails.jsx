@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getData, postData } from "../util";
 
-const ChallengeDetails = ({ challenge, onClose }) => {
+const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [checkInData, setCheckInData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
@@ -67,20 +67,61 @@ const ChallengeDetails = ({ challenge, onClose }) => {
         {/* Gradient overlay */}
         <div className="absolute inset-0 rounded-3xl border border-transparent bg-gradient-to-tr from-green-400/20 via-transparent to-blue-400/20 pointer-events-none"></div>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 text-gray-400 text-2xl hover:text-gray-600 transition z-10"
-        >
-          &times;
-        </button>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4 relative z-10">
+          <div>
+            {/* Title with optional edit icon */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-black">
+                {challenge.title}
+              </h2>
+              {/* Show edit icon only if user is creator */}
+              {challenge.createdBy === currentUserId && (
+                <button
+                  onClick={() => console.log("Edit challenge clicked")}
+                  className="text-gray-500 hover:text-gray-700"
+                  aria-label="Edit Challenge Title"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M17.414 2.586a2 2 0 010 2.828L8.828 14H6v-2.828l8.586-8.586a2 2 0 012.828 0z" />
+                    <path
+                      fillRule="evenodd"
+                      d="M4 16h12a1 1 0 110 2H4a1 1 0 110-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-        {/* Challenge title */}
-        <h2 className="text-2xl font-bold text-black text-center mb-2 relative z-10">
-          {challenge.title}
-        </h2>
+            {/* Subtitle */}
+            <p className="text-gray-400 text-sm mt-1">
+              {challengeEnded
+                ? "Past Challenge"
+                : checkInData
+                ? `Day ${displayCurrentDay} of ${challenge.duration}`
+                : ""}
+            </p>
+          </div>
 
-        {/* Status indicators - Updated with consistent styling */}
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="text-gray-400 text-2xl hover:text-gray-600 transition"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+
+        <hr className="border-gray-300 border mt-2 mb-4" />
+
+        {/* Status indicators */}
         <div className="flex justify-between mb-6 px-2 relative z-10">
           <div className="flex items-center">
             <div className="w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200 mr-2"></div>
@@ -122,7 +163,7 @@ const ChallengeDetails = ({ challenge, onClose }) => {
           </div>
         </div>
 
-        {/* Progress tracking with day numbers and circles combined */}
+        {/* Progress tracking */}
         <div className="mb-6 relative z-10">
           {loading ? (
             <p className="text-gray-500 text-center">Loading progress...</p>
@@ -136,18 +177,15 @@ const ChallengeDetails = ({ challenge, onClose }) => {
 
                 return (
                   <div key={day} className="flex flex-col items-center">
-                    {/* Day number - light green for current/past, dark gray for future */}
                     <div className={`text-xs font-medium mb-1 text-green-600`}>
                       {day}
                     </div>
-
-                    {/* Circle with border */}
                     <div
                       className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold border-2 ${
                         isChecked
-                          ? "bg-green-600  text-white"
+                          ? "bg-green-600 text-white"
                           : isMissed
-                          ? "bg-red-400  text-white"
+                          ? "bg-red-400 text-white"
                           : isCurrent
                           ? "bg-blue-100 border-blue-500 text-blue-800"
                           : isFutureDay
@@ -155,7 +193,6 @@ const ChallengeDetails = ({ challenge, onClose }) => {
                           : "bg-gray-100 border-gray-200 text-gray-600"
                       }`}
                     >
-                      {/* Show icon for checked or missed days */}
                       {isChecked ? (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -183,7 +220,6 @@ const ChallengeDetails = ({ challenge, onClose }) => {
                           />
                         </svg>
                       ) : (
-                        // Empty for days that are not checked or missed
                         ""
                       )}
                     </div>
