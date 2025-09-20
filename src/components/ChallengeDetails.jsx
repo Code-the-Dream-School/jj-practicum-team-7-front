@@ -52,8 +52,11 @@ const ChallengeDetails = ({ challenge, onClose }) => {
   const challengeEnded =
     challenge.status === "completed" || challenge.status === "failed";
 
+  // Create an array of days for the challenge duration
+  const daysArray = Array.from({ length: challenge.duration }, (_, i) => i + 1);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen z-50 p-4">
       {/* Gradient background & blobs */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300"></div>
       <div className="absolute -top-16 -left-16 w-40 h-40 bg-green-400/20 rounded-full blur-3xl"></div>
@@ -72,19 +75,132 @@ const ChallengeDetails = ({ challenge, onClose }) => {
           &times;
         </button>
 
-        {/* Challenge title and description */}
+        {/* Challenge title */}
         <h2 className="text-2xl font-bold text-black text-center mb-2 relative z-10">
           {challenge.title}
         </h2>
-        <p className="text-gray-600 text-center mb-6 relative z-10">
-          {challenge.description}
-        </p>
+
+        {/* Status indicators - Updated with consistent styling */}
+        <div className="flex justify-between mb-6 px-2 relative z-10">
+          <div className="flex items-center">
+            <div className="w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200 mr-2"></div>
+            <span className="text-sm text-gray-600">Check In</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 flex items-center justify-center rounded-full bg-green-600  mr-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-white"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <span className="text-sm text-gray-600">Checked In</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 flex items-center justify-center rounded-full bg-red-400  mr-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-white"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <span className="text-sm text-gray-600">Missed</span>
+          </div>
+        </div>
+
+        {/* Progress tracking with day numbers and circles combined */}
+        <div className="mb-6 relative z-10">
+          {loading ? (
+            <p className="text-gray-500 text-center">Loading progress...</p>
+          ) : checkInData ? (
+            <div className="grid grid-cols-10 gap-2 justify-center mb-4">
+              {daysArray.map((day) => {
+                const isChecked = checkInData.checkedDays?.includes(day);
+                const isMissed = checkInData.missedDays?.includes(day);
+                const isCurrent = day === displayCurrentDay;
+                const isFutureDay = day > displayCurrentDay;
+
+                return (
+                  <div key={day} className="flex flex-col items-center">
+                    {/* Day number - light green for current/past, dark gray for future */}
+                    <div className={`text-xs font-medium mb-1 text-green-600`}>
+                      {day}
+                    </div>
+
+                    {/* Circle with border */}
+                    <div
+                      className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold border-2 ${
+                        isChecked
+                          ? "bg-green-600  text-white"
+                          : isMissed
+                          ? "bg-red-400  text-white"
+                          : isCurrent
+                          ? "bg-blue-100 border-blue-500 text-blue-800"
+                          : isFutureDay
+                          ? "bg-gray-200 border-gray-300 text-gray-600"
+                          : "bg-gray-100 border-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {/* Show icon for checked or missed days */}
+                      {isChecked ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : isMissed ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        // Empty for days that are not checked or missed
+                        ""
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center">No progress yet.</p>
+          )}
+        </div>
 
         {/* Check In Button */}
         <button
           onClick={handleCheckIn}
           disabled={!canCheckIn || checkInLoading || challengeEnded}
-          className={`w-full py-3 rounded-xl font-semibold transition mb-6 relative z-10 ${
+          className={`w-full py-4 rounded-xl font-semibold text-lg transition mb-6 relative z-10 ${
             canCheckIn && !checkInLoading && !challengeEnded
               ? "bg-green-600 text-white hover:bg-green-700 hover:scale-[1.01] shadow-md"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -100,45 +216,6 @@ const ChallengeDetails = ({ challenge, onClose }) => {
             ? "Check In Today"
             : "Already Checked In"}
         </button>
-
-        {/* Progress tracking */}
-        <div className="mt-4 relative z-10">
-          {loading ? (
-            <p className="text-gray-500">Loading progress...</p>
-          ) : checkInData ? (
-            <>
-              <p className="mb-2 text-center">
-                <span className="font-semibold">Current Day:</span>{" "}
-                {displayCurrentDay}
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {Array.from(
-                  { length: challenge.duration },
-                  (_, i) => i + 1
-                ).map((day) => {
-                  const isChecked = checkInData.checkedDays?.includes(day);
-                  const isMissed = checkInData.missedDays?.includes(day);
-                  return (
-                    <div
-                      key={day}
-                      className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold ${
-                        isChecked
-                          ? "bg-green-500 text-white"
-                          : isMissed
-                          ? "bg-red-400 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {day}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <p className="text-gray-500 text-center">No progress yet.</p>
-          )}
-        </div>
       </div>
     </div>
   );
