@@ -5,6 +5,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [checkInData, setCheckInData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
+  const [showAllParticipants, setShowAllParticipants] = useState(false);
 
   const fetchCheckIns = async () => {
     if (!challenge?._id) return;
@@ -54,6 +55,24 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
 
   // Create an array of days for the challenge duration
   const daysArray = Array.from({ length: challenge.duration }, (_, i) => i + 1);
+
+  const gradients = [
+    "from-pink-500 to-yellow-500",
+    "from-green-400 to-blue-500",
+    "from-purple-500 to-pink-500",
+    "from-indigo-500 to-teal-400",
+    "from-orange-400 to-red-500",
+    "from-blue-400 to-cyan-500",
+  ];
+
+  const getGradient = (username) => {
+    if (!username) return gradients[0];
+    const hash = [...username].reduce(
+      (acc, char) => acc + char.charCodeAt(0),
+      0
+    );
+    return gradients[hash % gradients.length];
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen z-50 p-4">
@@ -118,6 +137,89 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
             &times;
           </button>
         </div>
+
+        <hr className="border-gray-300 border mt-2 mb-4" />
+
+        {/* Participants */}
+        <div className="mb-6 relative z-10">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">
+            Participants
+          </h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            {challenge.participant?.slice(0, 5).map((p) => {
+              const initials = p.username
+                ? p.username.slice(0, 2).toUpperCase()
+                : "?";
+              return (
+                <div
+                  key={p._id}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r ${getGradient(
+                    p.username
+                  )} text-white font-bold shadow-md relative group cursor-pointer`}
+                >
+                  {initials}
+                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                    {p.username}
+                  </span>
+                </div>
+              );
+            })}
+
+            {challenge.participant?.length > 5 && (
+              <button
+                onClick={() => setShowAllParticipants(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 font-semibold shadow-inner cursor-pointer"
+              >
+                +{challenge.participant.length - 5}
+              </button>
+            )}
+
+            <button
+              onClick={() => console.log("Open edit participants modal")}
+              className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-dashed border-gray-400 text-gray-500 hover:border-gray-600 hover:text-gray-700 transition"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Participants modal */}
+        {showAllParticipants && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            onClick={() => setShowAllParticipants(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-4">All Participants</h3>
+              <ul className="space-y-2 max-h-64 overflow-y-auto">
+                {challenge.participant?.map((p) => (
+                  <li
+                    key={p._id}
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100"
+                  >
+                    <div
+                      className={`w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-r ${getGradient(
+                        p.username
+                      )} text-white font-bold`}
+                    >
+                      {p.username ? p.username[0].toUpperCase() : "?"}
+                    </div>
+                    <span>{p.username}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setShowAllParticipants(false)}
+                className="mt-4 w-full py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
         <hr className="border-gray-300 border mt-2 mb-4" />
 
