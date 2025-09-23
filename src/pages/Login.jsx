@@ -1,28 +1,39 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import useAuthStore from "../store/useAuthStore";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/useAuthStore';
 
 const Login = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
-  const { isLoading, error } = useAuthStore();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login({ email, password });
-      navigate("/dashboard");
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      console.error("Login failed:", err);
+      console.error('Login failed:', err.message);
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'email') setEmail(value);
+    if (name === 'password') setPassword(value);
+    if (error) clearError();
+  };
+
   const handleGoogleLogin = () => {
-    window.location.href = `${
-      import.meta.env.VITE_BACKEND_URL
-    }/api/v1/auth/google`;
+    console.log('Initiating Google login'); // Debug
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
   };
 
   return (
@@ -38,25 +49,34 @@ const Login = () => {
           Sign in to your account
         </p>
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center relative z-10">
+          <div className="text-red-500 text-sm mb-4 text-center relative z-10 flex items-center justify-center">
             {error}
-          </p>
+            <button
+              type="button"
+              onClick={clearError}
+              className="ml-2 text-sm text-blue-500 hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           <input
             type="email"
+            name="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
           />
@@ -65,7 +85,7 @@ const Login = () => {
             disabled={isLoading}
             className="w-full bg-green-600 text-white py-3 rounded-xl shadow-md hover:bg-green-700 hover:scale-[1.01] transition disabled:opacity-60"
           >
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
         <div className="flex items-center my-6 relative z-10">
@@ -85,7 +105,7 @@ const Login = () => {
           Continue with Google
         </button>
         <p className="mt-6 text-center text-sm text-black relative z-10">
-          Don&apos;t have an account?{" "}
+          Don&apos;t have an account?{' '}
           <Link to="/register" className="text-green-600 hover:underline">
             Create account
           </Link>

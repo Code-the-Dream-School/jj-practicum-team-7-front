@@ -1,44 +1,59 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import useAuthStore from "../store/useAuthStore";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/useAuthStore';
 
 const Register = () => {
   const navigate = useNavigate();
-  const register = useAuthStore((state) => state.register);
-  const { isLoading, error } = useAuthStore();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [timezone, setTimezone] = useState("");
+  const { register, isLoading, error, clearError, isAuthenticated } = useAuthStore();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [timezone, setTimezone] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      useAuthStore.setState({ error: "Passwords do not match" });
+      useAuthStore.getState().setError('Passwords do not match');
       return;
     }
     if (password.length < 6) {
-      useAuthStore.setState({
-        error: "Invalid password format: must be at least 6 characters long",
-      });
+      useAuthStore.getState().setError('Password must be at least 6 characters long');
       return;
     }
     try {
+      console.log('Registering user with:', { username: name.trim(), email: email.trim().toLowerCase(), timezone }); // Debug
       await register({
         username: name.trim(),
         email: email.trim().toLowerCase(),
         password,
+        timezone,
       });
-      navigate("/login", { replace: true });
-    } catch (error) {}
+      navigate('/dashboard', { replace: true }); // Changed from /login
+    } catch (err) {
+      console.error('Register failed:', err.message);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'username') setName(value);
+    if (name === 'email') setEmail(value);
+    if (name === 'password') setPassword(value);
+    if (name === 'confirmPassword') setConfirmPassword(value);
+    if (name === 'timezone') setTimezone(value);
+    if (error) clearError();
   };
 
   const handleGoogleLogin = () => {
-    console.log("Initiating Google login");
-    window.location.href = `${
-      import.meta.env.VITE_BACKEND_URL
-    }/api/v1/auth/google`;
+    console.log('Initiating Google login'); // Debug
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
   };
 
   return (
@@ -54,50 +69,69 @@ const Register = () => {
           Create your PeerQuests account
         </p>
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center relative z-10">
+          <div className="text-red-500 text-sm mb-4 text-center relative z-10 flex items-center justify-center">
             {error}
-          </p>
+            <button
+              type="button"
+              onClick={clearError}
+              className="ml-2 text-sm text-blue-500 hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           <input
             type="text"
+            name="username"
             placeholder="Username / Nickname"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
           />
           <input
             type="email"
+            name="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
           />
           <input
             type="password"
+            name="confirmPassword"
             placeholder="Confirm Password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
+          />
+          <input
+            type="text"
+            name="timezone"
+            placeholder="Timezone (e.g., America/New_York)"
+            value={timezone}
+            onChange={handleInputChange}
+            className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
           />
           <button
             type="submit"
             disabled={isLoading}
             className="w-full bg-green-600 text-white py-3 rounded-xl shadow-md hover:bg-green-700 hover:scale-[1.01] transition disabled:opacity-60"
           >
-            {isLoading ? "Creating account..." : "Start now"}
+            {isLoading ? 'Creating account...' : 'Start now'}
           </button>
         </form>
         <div className="flex items-center my-6 relative z-10">
@@ -105,10 +139,9 @@ const Register = () => {
           <span className="px-2 text-gray-500 text-sm">or</span>
           <hr className="flex-grow border-gray-300" />
         </div>
-
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-3 rounded-xl bg-white/80 hover:bg-gray-100 shadow-sm transition relative z-10"
+          className="w-full flex items-center justify-center gap-2 border border-gray-200 py-3 rounded-xl bg-white/80 hover:bg-gray-100 shadow-sm transition relative z-10"
         >
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
@@ -117,9 +150,8 @@ const Register = () => {
           />
           Continue with Google
         </button>
-
         <p className="mt-6 text-center text-sm text-black relative z-10">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link to="/login" className="text-green-600 hover:underline">
             Sign in
           </Link>

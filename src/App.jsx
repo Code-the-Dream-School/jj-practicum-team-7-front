@@ -1,10 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -17,40 +11,71 @@ import useAuthStore from "./store/useAuthStore";
 import CreateChallengeModal from "./components/CreateChallenge";
 import ChallengeDetailsModal from "./components/ChallengeDetails";
 
-import ProtectedRoute from "./components/ProtectedRoute";
-
-
-// Redirect authenticated users from login/register
-const AuthenticatedUserRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  const { pathname } = useLocation();
-  if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return children;
-};
+import RouteGuard from "./components/RouteGuard";
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
- return (
+  return (
     <Router>
       <Routes>
-        <Route path="/" element={<AuthenticatedUserRoute><Landing /></AuthenticatedUserRoute>} />
-        <Route path="/login" element={<AuthenticatedUserRoute><Login /></AuthenticatedUserRoute>} />
-        <Route path="/register" element={<AuthenticatedUserRoute><Register /></AuthenticatedUserRoute>} />
+        <Route
+          path="/"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Landing />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Login />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Register />
+            </RouteGuard>
+          }
+        />
         <Route path="/oauth-success" element={<OAuthSuccess />} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/challenge/new" element={<ProtectedRoute><CreateChallengeModal /></ProtectedRoute>} />
-        <Route path="/challenge/:id" element={<ProtectedRoute><ChallengeDetailsModal /></ProtectedRoute>} />
+        <Route
+          path="/dashboard"
+          element={
+            <RouteGuard requiresAuth={true}>
+              <Dashboard />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/challenge/new"
+          element={
+            <RouteGuard requiresAuth={true}>
+              <CreateChallengeModal />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/challenge/:id"
+          element={
+            <RouteGuard requiresAuth={true}>
+              <ChallengeDetailsModal />
+            </RouteGuard>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
 }
-
 
 export default App;

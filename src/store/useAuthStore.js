@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import axios from "axios";
+import { create } from 'zustand';
+import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,27 +15,20 @@ const useAuthStore = create((set) => ({
   register: async (userData) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await axios.post(
-        `${BASE_URL}/api/v1/auth/register`,
-        userData,
-        {
-          timeout: 5000,
-        }
-      );
+      const res = await axios.post(`${BASE_URL}/api/v1/auth/register`, userData, {
+        timeout: 5000,
+      });
       set({
         user: res.data.user,
         token: res.data.token,
         isAuthenticated: true,
         isLoading: false,
       });
-      localStorage.setItem("authToken", res.data.token);
-      localStorage.setItem("username", res.data.user.username);
-      localStorage.setItem("email", res.data.user.email);
+      localStorage.setItem('authToken', res.data.token);
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Registration failed",
-        isLoading: false,
-      });
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      set({ error: errorMessage, isLoading: false });
+      throw new Error(errorMessage);
     }
   },
 
@@ -52,25 +45,18 @@ const useAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-      localStorage.setItem("authToken", res.data.token);
-      localStorage.setItem("username", res.data.user.username);
-      localStorage.setItem("email", res.data.user.email);
+      localStorage.setItem('authToken', res.data.token);
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Login failed",
-        isLoading: false,
-      });
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      set({ error: errorMessage, isLoading: false });
+      throw new Error(errorMessage);
     }
   },
 
   // Handle OAuth user data
   setOAuthUser: ({ user, token }) => {
-    const currentToken = localStorage.getItem("authToken");
-    if (token && token !== currentToken) {
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("username", user.username);
-      localStorage.setItem("email", user.email);
-    }
+    console.log('setOAuthUser called with:', { user, token: token ? token.substring(0, 20) + '...' : 'null' });
+    localStorage.setItem('authToken', token); // Force set token
     set({
       user,
       token: token || null,
@@ -84,7 +70,7 @@ const useAuthStore = create((set) => ({
   checkAuth: async () => {
     if (useAuthStore.getState().isCheckingAuth) return;
     set({ isCheckingAuth: true, isLoading: true });
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem('authToken');
     if (!token) {
       set({ isCheckingAuth: false, isLoading: false });
       return;
@@ -94,6 +80,7 @@ const useAuthStore = create((set) => ({
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
+      console.log('checkAuth response:', res.data); // Debug
       set({
         user: res.data.user,
         token,
@@ -102,24 +89,22 @@ const useAuthStore = create((set) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error(
-        "CheckAuth failed:",
-        error.response?.data?.message || error.message
-      );
+      console.error('CheckAuth failed:', error.response?.data?.message || error.message);
       set({
         user: null,
         token: null,
         isAuthenticated: false,
         isCheckingAuth: false,
         isLoading: false,
+        error: error.response?.data?.message || 'Authentication check failed',
       });
-      localStorage.clear();
+      localStorage.removeItem('authToken');
     }
   },
 
   // Log out a user
   logout: async () => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem('authToken');
     try {
       await axios.post(
         `${BASE_URL}/api/v1/auth/logout`,
@@ -130,21 +115,21 @@ const useAuthStore = create((set) => ({
         }
       );
     } catch (error) {
-      console.warn(
-        "Logout failed:",
-        error.response?.data?.message || error.message
-      ); 
+      console.warn('Logout failed:', error.response?.data?.message || error.message);
     }
     set({
       user: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      error: null,
     });
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("username");
-    localStorage.removeItem("email");
+    localStorage.removeItem('authToken');
   },
+
+  // Error handling actions
+  setError: (message) => set({ error: message }),
+  clearError: () => set({ error: null }),
 }));
 
 export default useAuthStore;
