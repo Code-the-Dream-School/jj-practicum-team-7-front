@@ -120,11 +120,10 @@ export default function Dashboard() {
       .join("")
       .toUpperCase();
 
-  //Handle logout
   const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
+  await logout();
+  navigate("/", { replace: true });
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
