@@ -50,4 +50,15 @@ const postData = async (endpoint, body = {}, config = {}) => {
   }
 };
 
-export { API, getData, getAllData, postData };
+// DELETE
+const deleteData = async (endpoint) => {
+  try {
+    const res = await API.delete(endpoint);
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - deleteData in ${endpoint} route`);
+    throw error;
+  }
+};
+
+export { API, getData, getAllData, postData, deleteData };

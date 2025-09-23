@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getData, postData } from "../util";
+import { getData, postData, deleteData } from "../util";
 
 const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [checkInData, setCheckInData] = useState(null);
@@ -83,10 +83,16 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
     setNewComment("");
   };
 
-  const handleDeleteChallenge = () => {
-    console.log("Challenge deleted for current user only:", challenge._id);
-    setShowDeleteModal(false);
-    onClose(); // Close modal after deletion
+  const handleDeleteChallenge = async () => {
+    if (!challenge?._id) return;
+    try {
+      await deleteData(`/challenges/${challenge._id}`);
+      console.log("Challenge deleted or user left:", challenge._id);
+      setShowDeleteModal(false);
+      onClose();
+    } catch (err) {
+      console.error("Error deleting challenge", err);
+    }
   };
 
   return (
