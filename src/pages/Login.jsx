@@ -18,6 +18,9 @@ const Login = () => {
       const res = await postData("/auth/login", { email, password });
       if (res.token) {
         localStorage.setItem("authToken", res.token);
+        // It is New: save userId and username from backend response
+        localStorage.setItem("userId", res.userId || res.user._id); // ADDED THIS
+        localStorage.setItem("username", res.username); //  ADDED THIS
         navigate("/dashboard");
       }
     } catch (err) {
@@ -29,8 +32,10 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-  window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
-};
+    window.location.href = `${
+      import.meta.env.VITE_BACKEND_URL
+    }/api/v1/auth/google`;
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300 relative overflow-hidden">
@@ -38,11 +43,9 @@ const Login = () => {
       <div className="absolute -top-16 -left-16 w-40 h-40 bg-green-400/20 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl"></div>
 
-
       <div className="w-full max-w-md bg-white/70 backdrop-blur-md p-10 rounded-3xl shadow-2xl border border-white/30 relative">
         {/* Gradient Border Overlay */}
         <div className="absolute inset-0 rounded-3xl border border-transparent bg-gradient-to-tr from-green-400/20 via-transparent to-blue-400/20 pointer-events-none"></div>
-
 
         <h2 className="text-2xl font-bold text-black text-center mb-2 relative z-10">
           Welcome back
@@ -51,13 +54,11 @@ const Login = () => {
           Sign in to your account
         </p>
 
-
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center relative z-10">
             {error}
           </p>
         )}
-
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           <input
@@ -85,14 +86,12 @@ const Login = () => {
           </button>
         </form>
 
-
         {/* Divider */}
         <div className="flex items-center my-6 relative z-10">
           <hr className="flex-grow border-gray-300" />
           <span className="px-2 text-gray-500 text-sm">or</span>
           <hr className="flex-grow border-gray-300" />
         </div>
-
 
         {/* Google login */}
         <button
@@ -107,7 +106,6 @@ const Login = () => {
           Continue with Google
         </button>
 
-
         <p className="mt-6 text-center text-sm text-black relative z-10">
           Don&apos;t have an account?{" "}
           <Link to="/register" className="text-green-600 hover:underline">
@@ -118,6 +116,5 @@ const Login = () => {
     </div>
   );
 };
-
 
 export default Login;
