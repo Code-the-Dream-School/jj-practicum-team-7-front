@@ -80,7 +80,7 @@ const useAuthStore = create((set) => ({
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
-      console.log('checkAuth response:', res.data); // Debug
+      console.log('checkAuth response:', res.data); 
       set({
         user: res.data.user,
         token,

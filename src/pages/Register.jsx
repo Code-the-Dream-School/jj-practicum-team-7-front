@@ -9,7 +9,6 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [timezone, setTimezone] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -19,6 +18,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    clearError(); // Clear previous errors before validation
     if (password !== confirmPassword) {
       useAuthStore.getState().setError('Passwords do not match');
       return;
@@ -28,14 +28,13 @@ const Register = () => {
       return;
     }
     try {
-      console.log('Registering user with:', { username: name.trim(), email: email.trim().toLowerCase(), timezone }); // Debug
+      console.log('Registering user with:', { username: name.trim(), email: email.trim().toLowerCase() });
       await register({
         username: name.trim(),
         email: email.trim().toLowerCase(),
         password,
-        timezone,
       });
-      navigate('/dashboard', { replace: true }); // Changed from /login
+      navigate('/dashboard', { replace: true }); 
     } catch (err) {
       console.error('Register failed:', err.message);
     }
@@ -47,12 +46,10 @@ const Register = () => {
     if (name === 'email') setEmail(value);
     if (name === 'password') setPassword(value);
     if (name === 'confirmPassword') setConfirmPassword(value);
-    if (name === 'timezone') setTimezone(value);
-    if (error) clearError();
   };
 
   const handleGoogleLogin = () => {
-    console.log('Initiating Google login'); // Debug
+    console.log('Initiating Google login'); 
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`;
   };
 
@@ -117,14 +114,6 @@ const Register = () => {
             onChange={handleInputChange}
             className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
             required
-          />
-          <input
-            type="text"
-            name="timezone"
-            placeholder="Timezone (e.g., America/New_York)"
-            value={timezone}
-            onChange={handleInputChange}
-            className="w-full p-3 rounded-xl bg-white/80 border border-gray-200 shadow-sm focus:ring-2 focus:ring-green-400 focus:scale-[1.02] transition"
           />
           <button
             type="submit"
