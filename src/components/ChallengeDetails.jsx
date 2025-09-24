@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getData, postData, deleteData } from "../util";
+import ChallengeLeaderboard from "./ChallengeLeaderboard";
 
 const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [checkInData, setCheckInData] = useState(null);
@@ -378,30 +379,12 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
 
         <hr className="border-gray-300 border mt-2 mb-4" />
 
-        {/* Comments Section */}
+        {/* Leaderboard Section */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Comments</h3>
-          <div className="flex gap-2 mb-2">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-              placeholder="Add a comment..."
-            />
-            <button
-              onClick={handleAddComment}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              Submit
-            </button>
-          </div>
-          <ul className="space-y-2">
-            {comments.map((c) => (
-              <li key={c.id} className="p-2 bg-gray-100 rounded-md">
-                {c.text}
-              </li>
-            ))}
-          </ul>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            Leaderboard
+          </h3>
+          <ChallengeLeaderboard challengeId={challenge._id} />
         </div>
 
         {/* Delete Challenge */}
