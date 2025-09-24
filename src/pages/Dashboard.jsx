@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getData } from "../util";
 import ChallengeDetailsModal from "../components/ChallengeDetails";
 
@@ -7,8 +7,41 @@ const Dashboard = () => {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const currentUserId = storedUser?._id;
+
+  const { id } = useParams();
+
+  const [showModal, setShowModal] = useState(false);
+
+  // Open modal when URL has id
+  useEffect(() => {
+    if (id && challenges.length > 0) {
+      const challenge = challenges.find((c) => c._id === id);
+      if (challenge) {
+        setSelectedChallenge(challenge);
+        setShowModal(true);
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [id, challenges, navigate]);
+
+  const openChallengeModal = (challenge) => {
+    setSelectedChallenge(challenge);
+    setShowModal(true);
+    navigate(`/dashboard/challenge/${challenge._id}`);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedChallenge(null);
+    navigate("/dashboard");
+  };
 
   useEffect(() => {
     fetchChallenges();
@@ -24,18 +57,6 @@ const Dashboard = () => {
       setError("Failed to load challenges");
       setLoading(false);
     }
-  };
-
-  const openChallengeModal = (challenge) => {
-    setSelectedChallenge(challenge);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedChallenge(null);
-    // Refresh challenges when modal closes to get updated status
-    fetchChallenges();
   };
 
   if (loading) {
@@ -94,10 +115,11 @@ const Dashboard = () => {
         )}
 
         {/* Modal */}
-        {showModal && selectedChallenge && (
+        {selectedChallenge && (
           <ChallengeDetailsModal
             challenge={selectedChallenge}
             onClose={closeModal}
+            currentUserId={currentUserId}
           />
         )}
 

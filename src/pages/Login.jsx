@@ -18,6 +18,7 @@ const Login = () => {
       const res = await postData("/auth/login", { email, password });
       if (res.token) {
         localStorage.setItem("authToken", res.token);
+        localStorage.setItem("user", JSON.stringify(res.user));
         navigate("/dashboard");
       }
     } catch (err) {
@@ -38,11 +39,9 @@ const Login = () => {
       <div className="absolute -top-16 -left-16 w-40 h-40 bg-green-400/20 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl"></div>
 
-
       <div className="w-full max-w-md bg-white/70 backdrop-blur-md p-10 rounded-3xl shadow-2xl border border-white/30 relative">
         {/* Gradient Border Overlay */}
         <div className="absolute inset-0 rounded-3xl border border-transparent bg-gradient-to-tr from-green-400/20 via-transparent to-blue-400/20 pointer-events-none"></div>
-
 
         <h2 className="text-2xl font-bold text-black text-center mb-2 relative z-10">
           Welcome back
@@ -51,13 +50,11 @@ const Login = () => {
           Sign in to your account
         </p>
 
-
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center relative z-10">
             {error}
           </p>
         )}
-
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           <input
@@ -118,6 +115,5 @@ const Login = () => {
     </div>
   );
 };
-
 
 export default Login;

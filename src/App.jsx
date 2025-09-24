@@ -7,7 +7,6 @@ import NotFound from "./pages/NotFound";
 import OAuthSuccess from "./pages/OAuthSuccess"; 
 
 import CreateChallengeModal from "./components/CreateChallenge";
-import ChallengeDetailsModal from "./components/ChallengeDetails";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -43,10 +42,10 @@ function App() {
           }
         />
         <Route
-          path="/challenge/:id"
+          path="/dashboard/challenge/:id"
           element={
             <ProtectedRoute>
-              <ChallengeDetailsModal />
+              <Dashboard />
             </ProtectedRoute>
           }
         />
