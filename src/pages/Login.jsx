@@ -18,9 +18,9 @@ const Login = () => {
       const res = await postData("/auth/login", { email, password });
       if (res.token) {
         localStorage.setItem("authToken", res.token);
-        // It is New: save userId and username from backend response
-        localStorage.setItem("userId", res.userId || res.user._id); // ADDED THIS
-        localStorage.setItem("username", res.username); //  ADDED THIS
+        //Save userId and username from backend response
+        localStorage.setItem("userId", res.user._id); //  ADDED THIS
+        localStorage.setItem("username", res.user.username); //  ADDED THIS
         navigate("/dashboard");
       }
     } catch (err) {

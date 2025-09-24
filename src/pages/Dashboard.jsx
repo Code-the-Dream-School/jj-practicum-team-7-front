@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { getData, patchData } from "../util/index";
 import CreateChallenge from "../components/CreateChallenge";
@@ -37,26 +36,37 @@ export default function Dashboard() {
 
       // Helper to extract _id safely
       const idOf = (item) =>
-        item && typeof item === "object" ? String(item._id ?? item.id ?? "") : String(item ?? "");
+        item && typeof item === "object"
+          ? String(item._id ?? item.id ?? "")
+          : String(item ?? "");
 
       const isParticipant = (c) =>
-        Array.isArray(c?.participant) && c.participant.some((p) => idOf(p) === userId);
+        Array.isArray(c?.participant) &&
+        c.participant.some((p) => idOf(p) === userId);
 
       const isInvited = (c) =>
         Array.isArray(c?.invited) && c.invited.some((i) => idOf(i) === userId);
 
       // Filter active, past, and invitations safely
       const active = challenges
-        .filter((c) => (c.status === "active" || c.status === "pending") && isParticipant(c))
-        .filter(c => c && c._id);
+        .filter(
+          (c) =>
+            (c.status === "active" || c.status === "pending") &&
+            isParticipant(c)
+        )
+        .filter((c) => c && c._id);
 
       const past = challenges
-        .filter((c) => (c.status === "completed" || c.status === "failed") && isParticipant(c))
-        .filter(c => c && c._id);
+        .filter(
+          (c) =>
+            (c.status === "completed" || c.status === "failed") &&
+            isParticipant(c)
+        )
+        .filter((c) => c && c._id);
 
       const invites = challenges
         .filter((c) => isInvited(c) && !isParticipant(c))
-        .filter(c => c && c._id);
+        .filter((c) => c && c._id);
 
       setActiveChallenges(active);
       setPastChallenges(past);
@@ -79,12 +89,14 @@ export default function Dashboard() {
       const res = await patchData(`/challenges/${challenge._id}/accept`);
       const updatedChallenge = res.challenge;
 
-      setInvitations(prev => prev.filter(i => i && i._id !== challenge._id));
+      setInvitations((prev) =>
+        prev.filter((i) => i && i._id !== challenge._id)
+      );
 
-      setActiveChallenges(prev => {
-        const exists = prev.some(c => c && c._id === challenge._id);
+      setActiveChallenges((prev) => {
+        const exists = prev.some((c) => c && c._id === challenge._id);
         if (exists) return prev;
-        return [...prev, updatedChallenge].filter(c => c && c._id);
+        return [...prev, updatedChallenge].filter((c) => c && c._id);
       });
     } catch (err) {
       console.error("Failed to accept challenge:", err);
@@ -95,8 +107,12 @@ export default function Dashboard() {
   const handleDecline = async (challenge) => {
     try {
       await patchData(`/challenges/${challenge._id}/decline`);
-      setInvitations(prev => prev.filter(i => i && i._id !== challenge._id));
-      setActiveChallenges(prev => prev.filter(c => c && c._id !== challenge._id));
+      setInvitations((prev) =>
+        prev.filter((i) => i && i._id !== challenge._id)
+      );
+      setActiveChallenges((prev) =>
+        prev.filter((c) => c && c._id !== challenge._id)
+      );
     } catch (err) {
       console.error("Failed to decline challenge:", err);
     }
@@ -145,6 +161,7 @@ export default function Dashboard() {
                   category={challenge.category}
                   total={challenge.duration}
                   days={Array(challenge.duration).fill("upcoming")}
+                  //ADDED THIS
                   onOpenDetails={() => {
                     setSelectedChallenge(challenge);
                     setModal("details");
@@ -201,7 +218,13 @@ export default function Dashboard() {
                 category={challenge.category}
                 progress={challenge.duration}
                 total={challenge.duration}
-                status={challenge.status === "completed" ? "Completed" : "Failed"}
+                status={
+                  challenge.status === "completed" ? "Completed" : "Failed"
+                }
+                onClick={() => {
+                  setSelectedChallenge(challenge); // set the clicked challenge
+                  setModal("details"); // open ChallengeDetails modal
+                }}
               />
             ))}
           </div>
