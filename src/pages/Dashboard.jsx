@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getData, patchData } from "../util/index";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore";
 import CreateChallenge from "../components/CreateChallenge";
 import ChallengeDetails from "../components/ChallengeDetails";
 import ChallengeCard from "../components/ChallengeCard";
@@ -9,7 +11,10 @@ import Modal from "../components/Modal";
 import CardWrapper from "../components/CardWrapper";
 
 export default function Dashboard() {
-  const [user, setUser] = useState({ name: "" });
+  const [loading, setLoading] = useState(true);
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  // const setUser = useState({ name: "" });
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [pastChallenges, setPastChallenges] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -26,13 +31,15 @@ export default function Dashboard() {
 
   // Fetch challenges for logged-in user
   const fetchChallenges = async () => {
+    setLoading(true);
     try {
       const res = await getData("/challenges");
       const challenges = Array.isArray(res?.challenges) ? res.challenges : [];
 
       // Normalize user id to string
-      const rawUserId = localStorage.getItem("userId");
-      const userId = rawUserId ? String(rawUserId) : "";
+      // const rawUserId = localStorage.getItem("userId");
+      // const userId = rawUserId ? String(rawUserId) : "";
+      const userId = String(user?._id || ""); // use the store user id
 
       // Helper to extract _id safely
       const idOf = (item) =>
@@ -72,16 +79,20 @@ export default function Dashboard() {
       setPastChallenges(past);
       setInvitations(invites);
 
-      const username = localStorage.getItem("username");
-      setUser({ name: username || "User" });
+      // const username = localStorage.getItem("username");
+      // setUser({ name: username || "User" });
     } catch (err) {
       console.error("Failed to fetch challenges:", err);
-    }
+    } finally {
+    setLoading(false);
+  }
   };
 
   useEffect(() => {
+    if (user?._id) {
     fetchChallenges();
-  }, []);
+    }
+  }, [user]);
 
   // ACCEPT: remove from invitations, add to active challenges
   const handleAccept = async (challenge) => {
@@ -118,30 +129,67 @@ export default function Dashboard() {
     }
   };
 
+const handleLogout = async () => {
+  await logout();
+  navigate("/", { replace: true });
+};
+
+
   return (
-    <div className="px-20 py-12 bg-gray-50 min-h-screen">
+    <>
+    {loading ? (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500 text-lg">Loading challenges...</p>
+      </div>
+    ) :(
+    <div className="pt-28 px-20 py-12 min-h-screen bg-gray-50">
+      <nav className="fixed top-0 left-0 w-full bg-white shadow-[0_0_14px_rgba(0,0,0,0.2)] p-4 flex justify-between items-center z-10">
+        <div className="flex items-center">
+          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
+            {getInitials(user?.username || "User")}
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-gray-800">
+              Welcome back, {user?.username || "User"}!
+            </h1>
+            <p className="text-sm text-gray-600">
+              Ready to tackle your challenges today?
+            </p>
+          </div>
+          </div>
+    {/* <div className="px-20 py-12 bg-gray-50 min-h-screen"> */}
       {/* Header */}
-      <div className="flex items-center mb-6">
+      {/* <div className="flex items-center mb-6">
         <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
           {getInitials(user.name)}
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Welcome back, {user.name}!
+             Welcome back, {user?.username || "User"}!
           </h1>
           <p className="text-gray-600">
             Ready to tackle your challenges today?
           </p>
-        </div>
-      </div>
-
-      {/* Create Challenge Button */}
-      <button
-        onClick={() => setModal("create")}
-        className="w-full bg-[#4CAF50] text-white font-semibold py-3 rounded-2xl hover:bg-green-600 transition"
-      >
-        + Create New Challenge
-      </button>
+        </div> */}
+        <button
+          onClick={handleLogout}
+          className="bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-600 transition"
+        >
+          Logout
+        </button>
+      </nav>
+      
+      {/* <div className="pt-28 px-20 py-12">
+        px-20 py-12 min-h-screen bg-gray-50 */}
+        
+        {/* Create Challenge Button */}
+        <button
+          onClick={() => setModal("create")}
+          className="w-full bg-[#4CAF50] text-white font-semibold py-3 rounded-2xl hover:bg-green-600 transition"
+        >
+          + Create New Challenge
+        </button>
+        {/* </div> */}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -234,7 +282,11 @@ export default function Dashboard() {
       {/* Modals */}
       {modal === "create" && (
         <Modal onClose={() => setModal(null)}>
-          <CreateChallenge />
+          <CreateChallenge onClose={() => setModal(null)}
+             onChallengeCreated={(newChallenge) =>
+        setActiveChallenges((prev) => [...prev, newChallenge])
+             }
+            />
         </Modal>
       )}
       {modal === "details" && selectedChallenge && (
@@ -243,5 +295,7 @@ export default function Dashboard() {
         </Modal>
       )}
     </div>
+    )}
+    </>
   );
 }

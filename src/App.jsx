@@ -1,56 +1,77 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import OAuthSuccess from "./pages/OAuthSuccess"; 
+import OAuthSuccess from "./pages/OAuthSuccess";
+import useAuthStore from "./store/useAuthStore";
 
 import CreateChallengeModal from "./components/CreateChallenge";
 import ChallengeDetailsModal from "./components/ChallengeDetails";
 
-import ProtectedRoute from "./components/ProtectedRoute";
-
-const URL = 'http://localhost:8000/api/v1/';
-
-
+import RouteGuard from "./components/RouteGuard";
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
-
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Landing />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Login />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RouteGuard requiresAuth={false}>
+              <Register />
+            </RouteGuard>
+          }
+        />
         <Route path="/oauth-success" element={<OAuthSuccess />} />
-
-
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <RouteGuard requiresAuth={true}>
               <Dashboard />
-            </ProtectedRoute>
+            </RouteGuard>
           }
         />
         <Route
           path="/challenge/new"
           element={
-            <ProtectedRoute >
+            <RouteGuard requiresAuth={true}>
               <CreateChallengeModal />
-            </ProtectedRoute>
+            </RouteGuard>
           }
         />
         <Route
           path="/challenge/:id"
           element={
-            <ProtectedRoute>
+            <RouteGuard requiresAuth={true}>
               <ChallengeDetailsModal />
-            </ProtectedRoute>
+            </RouteGuard>
           }
         />
-
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
