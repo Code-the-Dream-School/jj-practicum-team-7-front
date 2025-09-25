@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
-import logo from "../assets/logo.svg";
+import logo from "../assets/logo_2.png";
+import FooterCard from "../components/FooterCard";
+import footerLogo from "../assets/footerLogo.png";
 
 const Landing = () => {
   return (
@@ -10,7 +12,7 @@ const Landing = () => {
         <img
           src={logo}
           alt="App Logo"
-          className="w-40 h-28 mb-6"
+          className="w-34 h-28 mb-6"
           style={{ clipPath: "inset(0 0 0 2px)" }}
         />
       </header>
@@ -78,51 +80,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
-      <hr className="my-6 border-black mx-12 md:mx-24" />
 
       {/* Footer */}
-      <footer className="flex flex-col md:flex-row justify-between items-center px-12 md:px-24 py-6 mb-6 text-sm">
-        <div className="mb-4 md:mb-0">
-          <strong className="text-green-600">PeerQuests</strong>
-          <p className="text-gray-600">
-            Tackle challenges with your peers — one day at a time.
-          </p>
-        </div>
-        <div className="flex gap-5 text-xl">
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-blue-600"
-          >
-            <FaFacebook />
-          </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-blue-400"
-          >
-            <FaTwitter />
-          </a>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-pink-500"
-          >
-            <FaInstagram />
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-blue-700"
-          >
-            <FaLinkedin />
-          </a>
-        </div>
-      </footer>
+      <FooterCard variant="landing" footerLogo={footerLogo} />
     </div>
   );
 };
