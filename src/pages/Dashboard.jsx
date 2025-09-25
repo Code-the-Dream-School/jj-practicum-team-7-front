@@ -1,136 +1,245 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { getData } from "../util";
-import ChallengeDetailsModal from "../components/ChallengeDetails";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore";
+import CreateChallenge from "../components/CreateChallenge";
+import ChallengeDetails from "../components/ChallengeDetails";
+import ChallengeCard from "../components/ChallengeCard";
+import InvitationCard from "../components/InvitationCard";
+import PastChallengeCard from "../components/PastChallengeCard";
+import Modal from "../components/Modal";
 
-const Dashboard = () => {
-  const [challenges, setChallenges] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [error, setError] = useState("");
-
+export default function Dashboard() {
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [activeChallenges, setActiveChallenges] = useState([
+    {
+      id: 1,
+      title: "Morning meditation",
+      category: "Wellness",
+      total: 10,
+      days: [
+        "done",
+        "done",
+        "missed",
+        "missed",
+        "done",
+        "done",
+        "done",
+        "done",
+        "done",
+        "done",
+      ],
+    },
+    {
+      id: 2,
+      title: "Daily 10K Steps",
+      category: "Fitness",
+      total: 10,
+      days: [
+        "done",
+        "done",
+        "done",
+        "missed",
+        "done",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+      ],
+    },
+    {
+      id: 3,
+      title: "Healthy Breakfast",
+      category: "Nutrition",
+      total: 10,
+      days: [
+        "done",
+        "done",
+        "done",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+      ],
+    },
+  ]);
 
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const currentUserId = storedUser?._id;
+  const [pastChallenges] = useState([
+    {
+      id: 4,
+      title: "January Yoga Challenge",
+      category: "Fitness",
+      progress: 10,
+      total: 10,
+      status: "Completed",
+    },
+    {
+      id: 5,
+      title: "30-Days No Sugar Challenge",
+      category: "Nutrition",
+      progress: 7,
+      total: 10,
+      status: "Failed",
+    },
+    {
+      id: 6,
+      title: "No coffee after 2PM",
+      category: "Nutrition",
+      progress: 10,
+      total: 10,
+      status: "Completed",
+    },
+  ]);
 
-  const { id } = useParams();
+  const [invitations, setInvitations] = useState([
+    {
+      id: 7,
+      title: "30-Day Reading Challenge",
+      category: "Learning",
+      invitedBy: "Kate Chu",
+    },
+    {
+      id: 8,
+      title: "30-Day Fitness Challenge",
+      category: "Fitness",
+      invitedBy: "Alex Lee",
+    },
+  ]);
 
-  const [showModal, setShowModal] = useState(false);
+  const [modal, setModal] = useState(null); // "create" | "details" | null
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
 
-  // Open modal when URL has id
-  useEffect(() => {
-    if (id && challenges.length > 0) {
-      const challenge = challenges.find((c) => c._id === id);
-      if (challenge) {
-        setSelectedChallenge(challenge);
-        setShowModal(true);
-      } else {
-        navigate("/dashboard");
-      }
-    }
-  }, [id, challenges, navigate]);
+  const getInitials = (name) =>
+    name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
 
-  const openChallengeModal = (challenge) => {
-    setSelectedChallenge(challenge);
-    setShowModal(true);
-    navigate(`/dashboard/challenge/${challenge._id}`);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedChallenge(null);
-    navigate("/dashboard");
-  };
-
-  useEffect(() => {
-    fetchChallenges();
-  }, []);
-
-  const fetchChallenges = async () => {
-    try {
-      const response = await getData("/challenges");
-      setChallenges(response.challenges);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch challenges:", error);
-      setError("Failed to load challenges");
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
+  const handleLogout = async () => {
+  await logout();
+  navigate("/", { replace: true });
+};
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Your Challenges</h1>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="fixed top-0 left-0 w-full bg-white shadow-[0_0_14px_rgba(0,0,0,0.2)] p-4 flex justify-between items-center z-10">
+        <div className="flex items-center">
+          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
+            {getInitials(user?.username || "User")}
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-gray-800">
+              Welcome back, {user?.username || "User"}!
+            </h1>
+            <p className="text-sm text-gray-600">
+              Ready to tackle your challenges today?
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-600 transition"
+        >
+          Logout
+        </button>
+      </nav>
+      <div className="pt-28 px-20 py-12">
+        
+        {/* Create Challenge Button */}
+        <button
+          onClick={() => setModal("create")}
+          className="w-full bg-[#4CAF50] text-white font-semibold py-3 rounded-2xl hover:bg-green-600 transition"
+        >
+          + Create New Challenge
+        </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {challenges.map((challenge) => (
-            <div
-              key={challenge._id}
-              onClick={() => openChallengeModal(challenge)}
-              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition duration-200 cursor-pointer"
-            >
-              <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                {challenge.title}
-              </h3>
-              <p className="text-gray-600 mb-3 capitalize">
-                {challenge.category}
-              </p>
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  challenge.status === "completed"
-                    ? "bg-green-100 text-green-800"
-                    : challenge.status === "failed"
-                    ? "bg-red-100 text-red-800"
-                    : challenge.status === "active"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {challenge.status}
-              </span>
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          {/* Active Challenges */}
+          <div className="lg:col-span-2 border rounded-lg bg-white p-8 shadow-[0_0_14px_rgba(0,0,0,0.6)]">
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              Active Challenges ({activeChallenges.length})
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {activeChallenges.map((challenge) => (
+                <ChallengeCard
+                  key={challenge.id}
+                  {...challenge}
+                  onOpenDetails={() => {
+                    setSelectedChallenge(challenge);
+                    setModal("details");
+                  }}
+                />
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Invitations */}
+          <div className="border rounded-lg bg-white p-8 shadow-[0_0_14px_rgba(0,0,0,0.6)]">
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              Incoming Invitations ({invitations.length})
+            </h2>
+            <div className="space-y-4">
+              {invitations.map((invite) => (
+                <InvitationCard
+                  key={invite.id}
+                  invite={invite}
+                  getInitials={getInitials}
+                  onAccept={() => {
+                    setInvitations((prev) =>
+                      prev.filter((i) => i.id !== invite.id)
+                    );
+                    setActiveChallenges((prev) => [
+                      ...prev,
+                      {
+                        id: Date.now(),
+                        title: invite.title,
+                        category: invite.category,
+                        total: 10,
+                        days: Array(10).fill("upcoming"),
+                      },
+                    ]);
+                  }}
+                  onDecline={() =>
+                    setInvitations((prev) =>
+                      prev.filter((i) => i.id !== invite.id)
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
-        {challenges.length === 0 && (
-          <div className="text-center text-gray-600 mt-12">
-            <p className="text-lg mb-4">No challenges yet!</p>
-            <Link
-              to="/challenge/new"
-              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition duration-200"
-            >
-              Create Your First Challenge
-            </Link>
+        {/* Past Challenges */}
+        <div className="mt-8 border rounded-lg bg-white p-4 shadow-[0_0_14px_rgba(0,0,0,0.2)]">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            Past Challenges
+          </h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {pastChallenges.map((challenge) => (
+              <PastChallengeCard key={challenge.id} {...challenge} />
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Modal */}
-        {selectedChallenge && (
-          <ChallengeDetailsModal
-            challenge={selectedChallenge}
-            onClose={closeModal}
-            currentUserId={currentUserId}
-          />
+        {/* Modals */}
+        {modal === "create" && (
+          <Modal onClose={() => setModal(null)}>
+            <CreateChallenge />
+          </Modal>
         )}
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
+        {modal === "details" && selectedChallenge && (
+          <Modal onClose={() => setModal(null)}>
+            <ChallengeDetails challenge={selectedChallenge} />
+          </Modal>
         )}
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

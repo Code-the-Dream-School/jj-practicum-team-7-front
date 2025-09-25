@@ -20,7 +20,11 @@ API.interceptors.request.use(
 // GET with params
 const getData = async (endpoint, params = {}) => {
   try {
-    const res = await API.get(endpoint, { params });
+    const token = localStorage.getItem("authToken");
+    const res = await API.get(endpoint, {
+      params,
+      headers: { Authorization: token ? `Bearer ${token}` : "" },
+    });
     return res.data;
   } catch (error) {
     console.error(error, `error - getData in ${endpoint} route`);
@@ -42,7 +46,13 @@ const getAllData = async (endpoint) => {
 // POST
 const postData = async (endpoint, body = {}, config = {}) => {
   try {
-    const res = await API.post(endpoint, body, config);
+    const token = localStorage.getItem("authToken");
+    const headers = {
+      ...config.headers,
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }), 
+    };
+    const res = await API.post(endpoint, body, { ...config, headers });
     return res.data;
   } catch (error) {
     console.error(error, `error - postData in ${endpoint} route`);
