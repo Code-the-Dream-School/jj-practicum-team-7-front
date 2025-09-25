@@ -2,6 +2,8 @@ import { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { postData , getData} from "../util/index"
 import Select from 'react-select'
+import useAuthStore from "../store/useAuthStore"; // ADDED THIS
+
 const categories = [
   "Fitness",
   "Learning",
@@ -14,7 +16,7 @@ const categories = [
   "Other",
 ];
 
-const CreateChallengeModal = () => {
+const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -24,14 +26,15 @@ const CreateChallengeModal = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const currentUserId = localStorage.getItem("userId");
+  // const currentUserId = localStorage.getItem("userId");
+  const { user: currentUser } = useAuthStore(); // ADDED THIS INSTEAD
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await getData("/users");
         const filteredUsers = res.users.filter(
-          (user) => user._id !== currentUserId
+          (user) => user._id !== currentUser?._id //REPLCAED "currentUserId" with currentUser?._id 
         );
         setUsers(filteredUsers);
       } catch (err) {
@@ -39,8 +42,8 @@ const CreateChallengeModal = () => {
         setError("Failed to fetch users");
       }
     };
-    fetchUsers();
-  }, [currentUserId]);
+     if (currentUser?._id) fetchUsers(); // ADDED THIS: Only fetch if currentUser exists
+  }, [currentUser]);// REPLACED "currentUserId" with currentUser
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,7 +84,9 @@ const CreateChallengeModal = () => {
       };
       const res = await postData("/challenges", data);
       console.log(res);
-      navigate("/dashboard");
+      // navigate("/dashboard");
+      if (onChallengeCreated) onChallengeCreated(res.challenge);
+      // onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create challenge");
     } finally {
@@ -98,7 +103,7 @@ const CreateChallengeModal = () => {
       <div className="relative w-full max-w-md bg-white/70 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/30">
         <div className="absolute inset-0 rounded-3xl border border-transparent bg-gradient-to-tr from-green-400/20 via-transparent to-blue-400/20 pointer-events-none"></div>
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={onClose}
           className="absolute top-3 right-4 text-gray-400 text-2xl hover:text-gray-600 transition"
         >
           &times;

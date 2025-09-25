@@ -60,6 +60,24 @@ const postData = async (endpoint, body = {}, config = {}) => {
   }
 };
 
+//It is New: ADDED THIS
+// PATCH
+const patchData = async (endpoint, body = {}, config = {}) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const headers = {
+      ...config.headers,
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    const res = await API.patch(endpoint, body, { ...config, headers });
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - patchData in ${endpoint} route`);
+    throw error;
+  }
+};
+
 // DELETE
 const deleteData = async (endpoint) => {
   try {
@@ -71,4 +89,5 @@ const deleteData = async (endpoint) => {
   }
 };
 
-export { API, getData, getAllData, postData, deleteData };
+export { API, getData, getAllData, postData, patchData, deleteData };
+

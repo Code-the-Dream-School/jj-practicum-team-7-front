@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getData, patchData } from "../util/index";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import CreateChallenge from "../components/CreateChallenge";
@@ -7,126 +8,141 @@ import ChallengeCard from "../components/ChallengeCard";
 import InvitationCard from "../components/InvitationCard";
 import PastChallengeCard from "../components/PastChallengeCard";
 import Modal from "../components/Modal";
+import CardWrapper from "../components/CardWrapper";
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [activeChallenges, setActiveChallenges] = useState([
-    {
-      id: 1,
-      title: "Morning meditation",
-      category: "Wellness",
-      total: 10,
-      days: [
-        "done",
-        "done",
-        "missed",
-        "missed",
-        "done",
-        "done",
-        "done",
-        "done",
-        "done",
-        "done",
-      ],
-    },
-    {
-      id: 2,
-      title: "Daily 10K Steps",
-      category: "Fitness",
-      total: 10,
-      days: [
-        "done",
-        "done",
-        "done",
-        "missed",
-        "done",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-      ],
-    },
-    {
-      id: 3,
-      title: "Healthy Breakfast",
-      category: "Nutrition",
-      total: 10,
-      days: [
-        "done",
-        "done",
-        "done",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-        "upcoming",
-      ],
-    },
-  ]);
-
-  const [pastChallenges] = useState([
-    {
-      id: 4,
-      title: "January Yoga Challenge",
-      category: "Fitness",
-      progress: 10,
-      total: 10,
-      status: "Completed",
-    },
-    {
-      id: 5,
-      title: "30-Days No Sugar Challenge",
-      category: "Nutrition",
-      progress: 7,
-      total: 10,
-      status: "Failed",
-    },
-    {
-      id: 6,
-      title: "No coffee after 2PM",
-      category: "Nutrition",
-      progress: 10,
-      total: 10,
-      status: "Completed",
-    },
-  ]);
-
-  const [invitations, setInvitations] = useState([
-    {
-      id: 7,
-      title: "30-Day Reading Challenge",
-      category: "Learning",
-      invitedBy: "Kate Chu",
-    },
-    {
-      id: 8,
-      title: "30-Day Fitness Challenge",
-      category: "Fitness",
-      invitedBy: "Alex Lee",
-    },
-  ]);
-
+  // const setUser = useState({ name: "" });
+  const [activeChallenges, setActiveChallenges] = useState([]);
+  const [pastChallenges, setPastChallenges] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [modal, setModal] = useState(null); // "create" | "details" | null
   const [selectedChallenge, setSelectedChallenge] = useState(null);
 
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+  const getInitials = (name) => {
+    if (!name) return "";
+    const parts = name.trim().split(/\s+/);
+    return parts.length === 1
+      ? parts[0].slice(0, 2).toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
-  const handleLogout = async () => {
+  // Fetch challenges for logged-in user
+  const fetchChallenges = async () => {
+    setLoading(true);
+    try {
+      const res = await getData("/challenges");
+      const challenges = Array.isArray(res?.challenges) ? res.challenges : [];
+
+      // Normalize user id to string
+      // const rawUserId = localStorage.getItem("userId");
+      // const userId = rawUserId ? String(rawUserId) : "";
+      const userId = String(user?._id || ""); // use the store user id
+
+      // Helper to extract _id safely
+      const idOf = (item) =>
+        item && typeof item === "object"
+          ? String(item._id ?? item.id ?? "")
+          : String(item ?? "");
+
+      const isParticipant = (c) =>
+        Array.isArray(c?.participant) &&
+        c.participant.some((p) => idOf(p) === userId);
+
+      const isInvited = (c) =>
+        Array.isArray(c?.invited) && c.invited.some((i) => idOf(i) === userId);
+
+      // Filter active, past, and invitations safely
+      const active = challenges
+        .filter(
+          (c) =>
+            (c.status === "active" || c.status === "pending") &&
+            isParticipant(c)
+        )
+        .filter((c) => c && c._id);
+
+      const past = challenges
+        .filter(
+          (c) =>
+            (c.status === "completed" || c.status === "failed") &&
+            isParticipant(c)
+        )
+        .filter((c) => c && c._id);
+
+      const invites = challenges
+        .filter((c) => isInvited(c) && !isParticipant(c))
+        .filter((c) => c && c._id);
+
+      setActiveChallenges(active);
+      setPastChallenges(past);
+      setInvitations(invites);
+
+      // const username = localStorage.getItem("username");
+      // setUser({ name: username || "User" });
+    } catch (err) {
+      console.error("Failed to fetch challenges:", err);
+    } finally {
+    setLoading(false);
+  }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+    fetchChallenges();
+    }
+  }, [user]);
+
+  // ACCEPT: remove from invitations, add to active challenges
+  const handleAccept = async (challenge) => {
+    try {
+      const res = await patchData(`/challenges/${challenge._id}/accept`);
+      const updatedChallenge = res.challenge;
+
+      setInvitations((prev) =>
+        prev.filter((i) => i && i._id !== challenge._id)
+      );
+
+      setActiveChallenges((prev) => {
+        const exists = prev.some((c) => c && c._id === challenge._id);
+        if (exists) return prev;
+        return [...prev, updatedChallenge].filter((c) => c && c._id);
+      });
+    } catch (err) {
+      console.error("Failed to accept challenge:", err);
+    }
+  };
+
+  // DECLINE: remove from invitations
+  const handleDecline = async (challenge) => {
+    try {
+      await patchData(`/challenges/${challenge._id}/decline`);
+      setInvitations((prev) =>
+        prev.filter((i) => i && i._id !== challenge._id)
+      );
+      setActiveChallenges((prev) =>
+        prev.filter((c) => c && c._id !== challenge._id)
+      );
+    } catch (err) {
+      console.error("Failed to decline challenge:", err);
+    }
+  };
+
+const handleLogout = async () => {
   await logout();
   navigate("/", { replace: true });
 };
 
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+    {loading ? (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500 text-lg">Loading challenges...</p>
+      </div>
+    ) :(
+    <div className="pt-28 px-20 py-12 min-h-screen bg-gray-50">
       <nav className="fixed top-0 left-0 w-full bg-white shadow-[0_0_14px_rgba(0,0,0,0.2)] p-4 flex justify-between items-center z-10">
         <div className="flex items-center">
           <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
@@ -140,7 +156,21 @@ export default function Dashboard() {
               Ready to tackle your challenges today?
             </p>
           </div>
+          </div>
+    {/* <div className="px-20 py-12 bg-gray-50 min-h-screen"> */}
+      {/* Header */}
+      {/* <div className="flex items-center mb-6">
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
+          {getInitials(user.name)}
         </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+             Welcome back, {user?.username || "User"}!
+          </h1>
+          <p className="text-gray-600">
+            Ready to tackle your challenges today?
+          </p>
+        </div> */}
         <button
           onClick={handleLogout}
           className="bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-600 transition"
@@ -148,7 +178,9 @@ export default function Dashboard() {
           Logout
         </button>
       </nav>
-      <div className="pt-28 px-20 py-12">
+      
+      {/* <div className="pt-28 px-20 py-12">
+        px-20 py-12 min-h-screen bg-gray-50 */}
         
         {/* Create Challenge Button */}
         <button
@@ -157,19 +189,27 @@ export default function Dashboard() {
         >
           + Create New Challenge
         </button>
+        {/* </div> */}
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Active Challenges */}
-          <div className="lg:col-span-2 border rounded-lg bg-white p-8 shadow-[0_0_14px_rgba(0,0,0,0.6)]">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700">
-              Active Challenges ({activeChallenges.length})
-            </h2>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        {/* Active Challenges */}
+        <CardWrapper className="lg:col-span-2">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            Active Challenges ({activeChallenges.length})
+          </h2>
+          {activeChallenges.length === 0 ? (
+            <p className="text-gray-500 italic">No active challenges yet</p>
+          ) : (
             <div className="grid md:grid-cols-2 gap-4">
               {activeChallenges.map((challenge) => (
                 <ChallengeCard
-                  key={challenge.id}
-                  {...challenge}
+                  key={challenge._id}
+                  title={challenge.title}
+                  category={challenge.category}
+                  total={challenge.duration}
+                  days={Array(challenge.duration).fill("upcoming")}
+                  //ADDED THIS
                   onOpenDetails={() => {
                     setSelectedChallenge(challenge);
                     setModal("details");
@@ -177,69 +217,85 @@ export default function Dashboard() {
                 />
               ))}
             </div>
-          </div>
+          )}
+        </CardWrapper>
 
-          {/* Invitations */}
-          <div className="border rounded-lg bg-white p-8 shadow-[0_0_14px_rgba(0,0,0,0.6)]">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700">
-              Incoming Invitations ({invitations.length})
-            </h2>
+        {/* Invitations */}
+        <CardWrapper>
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            Incoming Invitations ({invitations.length})
+          </h2>
+          {invitations.length === 0 ? (
+            <p className="text-gray-500 italic">No invitations yet</p>
+          ) : (
             <div className="space-y-4">
               {invitations.map((invite) => (
                 <InvitationCard
-                  key={invite.id}
-                  invite={invite}
-                  getInitials={getInitials}
-                  onAccept={() => {
-                    setInvitations((prev) =>
-                      prev.filter((i) => i.id !== invite.id)
-                    );
-                    setActiveChallenges((prev) => [
-                      ...prev,
-                      {
-                        id: Date.now(),
-                        title: invite.title,
-                        category: invite.category,
-                        total: 10,
-                        days: Array(10).fill("upcoming"),
-                      },
-                    ]);
+                  key={invite._id}
+                  invite={{
+                    title: invite.title,
+                    category: invite.category,
+                    invitedBy: invite.creator.username,
                   }}
-                  onDecline={() =>
-                    setInvitations((prev) =>
-                      prev.filter((i) => i.id !== invite.id)
-                    )
-                  }
+                  getInitials={getInitials}
+                  onAccept={() => handleAccept(invite)}
+                  onDecline={() => handleDecline(invite)}
                 />
               ))}
             </div>
-          </div>
-        </div>
+          )}
+        </CardWrapper>
+      </div>
 
-        {/* Past Challenges */}
-        <div className="mt-8 border rounded-lg bg-white p-4 shadow-[0_0_14px_rgba(0,0,0,0.2)]">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Past Challenges
-          </h2>
+      {/* Past Challenges */}
+      <CardWrapper
+        shadow="shadow-[0_0_14px_rgba(0,0,0,0.2)]"
+        className="mt-8 p-4"
+      >
+        <h2 className="text-lg font-semibold mb-4 text-gray-700">
+          Past Challenges
+        </h2>
+        {pastChallenges.length === 0 ? (
+          <p className="text-gray-500 italic">No past challenges yet</p>
+        ) : (
           <div className="grid md:grid-cols-3 gap-4">
             {pastChallenges.map((challenge) => (
-              <PastChallengeCard key={challenge.id} {...challenge} />
+              <PastChallengeCard
+                key={challenge._id}
+                title={challenge.title}
+                category={challenge.category}
+                progress={challenge.duration}
+                total={challenge.duration}
+                status={
+                  challenge.status === "completed" ? "Completed" : "Failed"
+                }
+                onClick={() => {
+                  setSelectedChallenge(challenge); // set the clicked challenge
+                  setModal("details"); // open ChallengeDetails modal
+                }}
+              />
             ))}
           </div>
-        </div>
+        )}
+      </CardWrapper>
 
-        {/* Modals */}
-        {modal === "create" && (
-          <Modal onClose={() => setModal(null)}>
-            <CreateChallenge />
-          </Modal>
-        )}
-        {modal === "details" && selectedChallenge && (
-          <Modal onClose={() => setModal(null)}>
-            <ChallengeDetails challenge={selectedChallenge} />
-          </Modal>
-        )}
-      </div>
+      {/* Modals */}
+      {modal === "create" && (
+        <Modal onClose={() => setModal(null)}>
+          <CreateChallenge onClose={() => setModal(null)}
+             onChallengeCreated={(newChallenge) =>
+        setActiveChallenges((prev) => [...prev, newChallenge])
+             }
+            />
+        </Modal>
+      )}
+      {modal === "details" && selectedChallenge && (
+        <Modal onClose={() => setModal(null)}>
+          <ChallengeDetails challenge={selectedChallenge} />
+        </Modal>
+      )}
     </div>
+    )}
+    </>
   );
 }
