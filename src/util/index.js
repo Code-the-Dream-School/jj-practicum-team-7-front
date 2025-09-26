@@ -46,4 +46,23 @@ const postData = async (endpoint, body = {}, config = {}) => {
   }
 };
 
-export { API, getData, getAllData, postData };
+//It is New: ADDED THIS
+// PATCH
+const patchData = async (endpoint, body = {}, config = {}) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const headers = {
+      ...config.headers,
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    const res = await API.patch(endpoint, body, { ...config, headers });
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - patchData in ${endpoint} route`);
+    throw error;
+  }
+};
+
+export { API, getData, getAllData, postData, patchData };
+
