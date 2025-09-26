@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { getData, postData, deleteData, patchData } from "../util";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import Select from "react-select";
+import { deleteData, getData, patchData, postData } from "../util";
 
 const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
   const [checkInData, setCheckInData] = useState(null);
@@ -13,6 +14,28 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(challenge.title);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showEditParticipantsModal, setShowEditParticipantsModal] =
+    useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await getData("/users");
+        // exclude current user and already participants
+        const filteredUsers = res.users.filter(
+          (u) =>
+            u._id !== currentUserId &&
+            !challenge.participant?.some((p) => p._id === u._id)
+        );
+        setAllUsers(filteredUsers);
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+    };
+    fetchUsers();
+  }, [currentUserId, challenge.participant]);
 
   const fetchCheckIns = async () => {
     if (!challenge?._id) return;
@@ -113,6 +136,22 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating challenge title", err);
+    }
+  };
+
+  const handleParticipantsEdit = async () => {
+    if (!challenge?._id || selectedUsers.length === 0) return;
+
+    try {
+      const updated = await patchData(`/challenges/${challenge._id}`, {
+        invited: selectedUsers, // send selected user IDs as invitations
+      });
+      setSelectedUsers([]);
+      setShowEditParticipantsModal(false);
+      toast.success("Invitations sent successfully!");
+    } catch (err) {
+      console.error("Error sending invitations", err);
+      toast.error("Failed to send invitations.");
     }
   };
 
@@ -244,14 +283,65 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
               </button>
             )}
 
-            <button
-              onClick={() => console.log("Open edit participants modal")}
-              className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-dashed border-gray-400 text-gray-500 hover:border-gray-600 hover:text-gray-700 transition"
-            >
-              +
-            </button>
+            {challenge.creator?._id === currentUserId && (
+              <button
+                onClick={() => setShowEditParticipantsModal(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-dashed border-gray-400 text-gray-500 hover:border-gray-600 hover:text-gray-700 transition"
+              >
+                +
+              </button>
+            )}
           </div>
         </div>
+
+        {showEditParticipantsModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            onClick={() => setShowEditParticipantsModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-4">Add Participants</h3>
+
+              <Select
+                isMulti
+                options={allUsers.map((u) => ({
+                  value: u._id,
+                  label: u.username || u.email,
+                }))}
+                onChange={(options) =>
+                  setSelectedUsers(options.map((o) => o.value))
+                }
+                placeholder="Select friends to invite..."
+                className="mb-4"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? "#4ade80" : "#e5e7eb",
+                    boxShadow: state.isFocused ? "0 0 0 2px #4ade80" : "none",
+                  }),
+                }}
+              />
+
+              <div className="flex gap-4">
+                <button
+                  onClick={handleParticipantsEdit}
+                  className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => setShowEditParticipantsModal(false)}
+                  className="flex-1 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Participants modal */}
         {showAllParticipants && (
