@@ -9,6 +9,8 @@ import InvitationCard from "../components/InvitationCard";
 import PastChallengeCard from "../components/PastChallengeCard";
 import Modal from "../components/Modal";
 import CardWrapper from "../components/CardWrapper";
+import FooterCard from "../components/FooterCard";
+import footerLogo from "../assets/footerLogo.png";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -275,6 +277,8 @@ export default function Dashboard() {
               />
             </Modal>
           )}
+          {/* Footer */}
+      <FooterCard variant="dashboard" footerLogo={footerLogo} />
         </div>
       )}
     </>
