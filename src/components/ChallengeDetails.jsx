@@ -116,7 +116,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
                 {challenge.title}
               </h2>
               {/* Show edit icon only if user is creator */}
-              {challenge.createdBy === currentUserId && (
+              {challenge.creator?._id === currentUserId && (
                 <button
                   onClick={() => console.log("Edit challenge clicked")}
                   className="text-gray-500 hover:text-gray-700"
