@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { getData, postData, deleteData } from "../util";
+import { getData, postData, deleteData, patchData } from "../util";
+import toast from "react-hot-toast";
 
-const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
+const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
   const [checkInData, setCheckInData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
@@ -9,6 +10,8 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(challenge.title);
 
   const fetchCheckIns = async () => {
     if (!challenge?._id) return;
@@ -87,11 +90,25 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
     if (!challenge?._id) return;
     try {
       await deleteData(`/challenges/${challenge._id}`);
-      console.log("Challenge deleted or user left:", challenge._id);
+      toast.success("Challenge deleted successfully!");
       setShowDeleteModal(false);
       onClose();
+      onDelete?.();
     } catch (err) {
       console.error("Error deleting challenge", err);
+    }
+  };
+
+  const handleTitleEdit = async () => {
+    try {
+      const updated = await patchData(`/challenges/${challenge._id}`, {
+        title: editedTitle,
+      });
+      challenge.title = updated.challenge.title;
+      setEditedTitle(updated.challenge.title);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating challenge title", err);
     }
   };
 
@@ -112,13 +129,41 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
           <div>
             {/* Title with optional edit icon */}
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold text-black">
-                {challenge.title}
-              </h2>
+              {isEditing ? (
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    className="flex-1 border-0 border-b border-gray-300 bg-transparent px-1 py-1 text-2xl 
+                       italic text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-0"
+                  />
+                  <button
+                    onClick={handleTitleEdit}
+                    className="text-green-600 hover:text-green-700 font-medium pt-2"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditedTitle(challenge.title);
+                      setIsEditing(false);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 pt-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <h2 className="text-2xl font-bold text-black">
+                  {challenge.title}
+                </h2>
+              )}
+
               {/* Show edit icon only if user is creator */}
-              {challenge.creator?._id === currentUserId && (
+              {!isEditing && challenge.creator?._id === currentUserId && (
                 <button
-                  onClick={() => console.log("Edit challenge clicked")}
+                  onClick={() => setIsEditing(true)}
                   className="text-gray-500 hover:text-gray-700"
                   aria-label="Edit Challenge Title"
                 >
@@ -405,7 +450,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
         </div>
 
         {/* Delete Challenge */}
-        {challenge.createdBy === currentUserId && (
+        {challenge.participant?.some((p) => p._id === currentUserId) && (
           <div className="mb-6 flex justify-center">
             <p>
               <a
@@ -438,7 +483,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId }) => {
               <div className="flex gap-4">
                 <button
                   onClick={handleDeleteChallenge}
-                  className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700"
                 >
                   Delete
                 </button>

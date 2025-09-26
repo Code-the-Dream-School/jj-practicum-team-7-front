@@ -11,6 +11,7 @@ import useAuthStore from "./store/useAuthStore";
 import CreateChallengeModal from "./components/CreateChallenge";
 
 import RouteGuard from "./components/RouteGuard";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -20,60 +21,63 @@ function App() {
   }, [checkAuth]);
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <RouteGuard requiresAuth={false}>
-              <Landing />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <RouteGuard requiresAuth={false}>
-              <Login />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <RouteGuard requiresAuth={false}>
-              <Register />
-            </RouteGuard>
-          }
-        />
-        <Route path="/oauth-success" element={<OAuthSuccess />} />
-        <Route
-          path="/dashboard"
-          element={
-            <RouteGuard requiresAuth={true}>
-              <Dashboard />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/challenge/new"
-          element={
-            <RouteGuard requiresAuth={true}>
-              <CreateChallengeModal />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/dashboard/challenge/:id"
-          element={
-            <RouteGuard requiresAuth={true}>
-              <Dashboard />
-            </RouteGuard>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <>
+      <Toaster position="top-right" containerStyle={{ zIndex: 9999 }} />
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RouteGuard requiresAuth={false}>
+                <Landing />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RouteGuard requiresAuth={false}>
+                <Login />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <RouteGuard requiresAuth={false}>
+                <Register />
+              </RouteGuard>
+            }
+          />
+          <Route path="/oauth-success" element={<OAuthSuccess />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RouteGuard requiresAuth={true}>
+                <Dashboard />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/challenge/new"
+            element={
+              <RouteGuard requiresAuth={true}>
+                <CreateChallengeModal />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/dashboard/challenge/:id"
+            element={
+              <RouteGuard requiresAuth={true}>
+                <Dashboard />
+              </RouteGuard>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

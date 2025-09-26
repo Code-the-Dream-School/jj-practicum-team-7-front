@@ -271,6 +271,7 @@ export default function Dashboard() {
                 challenge={selectedChallenge}
                 onClose={() => setModal(null)}
                 currentUserId={user?._id}
+                onDelete={fetchChallenges}
               />
             </Modal>
           )}
