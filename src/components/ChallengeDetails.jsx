@@ -37,8 +37,10 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
     try {
       await postData(`/challenges/${challenge._id}/checkins`);
       await fetchCheckIns();
+      toast.success("Checked in successfully!");
     } catch (err) {
       console.error("Error checking in", err);
+      toast.error("Failed to check in. Please try again.");
     } finally {
       setCheckInLoading(false);
     }
@@ -96,6 +98,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
       onDelete?.();
     } catch (err) {
       console.error("Error deleting challenge", err);
+      toast.error("Failed to delete challenge.");
     }
   };
 
