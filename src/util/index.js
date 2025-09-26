@@ -46,7 +46,6 @@ const postData = async (endpoint, body = {}, config = {}) => {
   }
 };
 
-//It is New: ADDED THIS
 // PATCH
 const patchData = async (endpoint, body = {}, config = {}) => {
   try {
