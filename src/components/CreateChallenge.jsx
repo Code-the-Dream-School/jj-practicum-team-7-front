@@ -1,8 +1,8 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { postData , getData} from "../util/index"
-import Select from 'react-select'
-import useAuthStore from "../store/useAuthStore"; // ADDED THIS
+import { postData, getData } from "../util/index";
+import Select from "react-select";
+import useAuthStore from "../store/useAuthStore";
 
 const categories = [
   "Fitness",
@@ -16,7 +16,7 @@ const categories = [
   "Other",
 ];
 
-const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
+const CreateChallengeModal = ({ onClose, onChallengeCreated }) => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -26,15 +26,14 @@ const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // const currentUserId = localStorage.getItem("userId");
-  const { user: currentUser } = useAuthStore(); // ADDED THIS INSTEAD
+  const { user: currentUser } = useAuthStore();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await getData("/users");
         const filteredUsers = res.users.filter(
-          (user) => user._id !== currentUser?._id //REPLCAED "currentUserId" with currentUser?._id 
+          (user) => user._id !== currentUser?._id
         );
         setUsers(filteredUsers);
       } catch (err) {
@@ -42,8 +41,9 @@ const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
         setError("Failed to fetch users");
       }
     };
-     if (currentUser?._id) fetchUsers(); // ADDED THIS: Only fetch if currentUser exists
-  }, [currentUser]);// REPLACED "currentUserId" with currentUser
+    // Only fetch if currentUser exists
+    if (currentUser?._id) fetchUsers();
+  }, [currentUser]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,16 +84,15 @@ const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
       };
       const res = await postData("/challenges", data);
       console.log(res);
-      // navigate("/dashboard");
       if (onChallengeCreated) onChallengeCreated(res.challenge);
-      // onClose();
+      onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create challenge");
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center min-h-screen z-50">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300"></div>
@@ -122,7 +121,11 @@ const CreateChallengeModal = ({ onClose, onChallengeCreated  }) => {
           </p>
         )}
 
-        <form className="space-y-4 relative z-10" onSubmit={handleSubmit} noValidate>
+        <form
+          className="space-y-4 relative z-10"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {/* Title */}
           <input
             type="text"

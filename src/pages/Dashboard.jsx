@@ -14,7 +14,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  // const setUser = useState({ name: "" });
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [pastChallenges, setPastChallenges] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -37,9 +36,7 @@ export default function Dashboard() {
       const challenges = Array.isArray(res?.challenges) ? res.challenges : [];
 
       // Normalize user id to string
-      // const rawUserId = localStorage.getItem("userId");
-      // const userId = rawUserId ? String(rawUserId) : "";
-      const userId = String(user?._id || ""); // use the store user id
+      const userId = String(user?._id || "");
 
       // Helper to extract _id safely
       const idOf = (item) =>
@@ -78,19 +75,16 @@ export default function Dashboard() {
       setActiveChallenges(active);
       setPastChallenges(past);
       setInvitations(invites);
-
-      // const username = localStorage.getItem("username");
-      // setUser({ name: username || "User" });
     } catch (err) {
       console.error("Failed to fetch challenges:", err);
     } finally {
-    setLoading(false);
-  }
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     if (user?._id) {
-    fetchChallenges();
+      fetchChallenges();
     }
   }, [user]);
 
@@ -129,173 +123,155 @@ export default function Dashboard() {
     }
   };
 
-const handleLogout = async () => {
-  await logout();
-  navigate("/", { replace: true });
-};
-
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
+  };
 
   return (
     <>
-    {loading ? (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Loading challenges...</p>
-      </div>
-    ) :(
-    <div className="pt-28 px-20 py-12 min-h-screen bg-gray-50">
-      <nav className="fixed top-0 left-0 w-full bg-white shadow-[0_0_14px_rgba(0,0,0,0.2)] p-4 flex justify-between items-center z-10">
-        <div className="flex items-center">
-          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
-            {getInitials(user?.username || "User")}
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">
-              Welcome back, {user?.username || "User"}!
-            </h1>
-            <p className="text-sm text-gray-600">
-              Ready to tackle your challenges today?
-            </p>
-          </div>
-          </div>
-    {/* <div className="px-20 py-12 bg-gray-50 min-h-screen"> */}
-      {/* Header */}
-      {/* <div className="flex items-center mb-6">
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
-          {getInitials(user.name)}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-gray-500 text-lg">Loading challenges...</p>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-             Welcome back, {user?.username || "User"}!
-          </h1>
-          <p className="text-gray-600">
-            Ready to tackle your challenges today?
-          </p>
-        </div> */}
-        <button
-          onClick={handleLogout}
-          className="bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-600 transition"
-        >
-          Logout
-        </button>
-      </nav>
-      
-      {/* <div className="pt-28 px-20 py-12">
-        px-20 py-12 min-h-screen bg-gray-50 */}
-        
-        {/* Create Challenge Button */}
-        <button
-          onClick={() => setModal("create")}
-          className="w-full bg-[#4CAF50] text-white font-semibold py-3 rounded-2xl hover:bg-green-600 transition"
-        >
-          + Create New Challenge
-        </button>
-        {/* </div> */}
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Active Challenges */}
-        <CardWrapper className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Active Challenges ({activeChallenges.length})
-          </h2>
-          {activeChallenges.length === 0 ? (
-            <p className="text-gray-500 italic">No active challenges yet</p>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {activeChallenges.map((challenge) => (
-                <ChallengeCard
-                  key={challenge._id}
-                  title={challenge.title}
-                  category={challenge.category}
-                  total={challenge.duration}
-                  days={Array(challenge.duration).fill("upcoming")}
-                  //ADDED THIS
-                  onOpenDetails={() => {
-                    setSelectedChallenge(challenge);
-                    setModal("details");
-                  }}
-                />
-              ))}
+      ) : (
+        <div className="pt-28 px-20 py-12 min-h-screen bg-gray-50">
+          <nav className="fixed top-0 left-0 w-full bg-white shadow-[0_0_14px_rgba(0,0,0,0.2)] p-4 flex justify-between items-center z-10">
+            <div className="flex items-center">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#4CAF50] text-white font-bold mr-3">
+                {getInitials(user?.username || "User")}
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-800">
+                  Welcome back, {user?.username || "User"}!
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Ready to tackle your challenges today?
+                </p>
+              </div>
             </div>
-          )}
-        </CardWrapper>
 
-        {/* Invitations */}
-        <CardWrapper>
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Incoming Invitations ({invitations.length})
-          </h2>
-          {invitations.length === 0 ? (
-            <p className="text-gray-500 italic">No invitations yet</p>
-          ) : (
-            <div className="space-y-4">
-              {invitations.map((invite) => (
-                <InvitationCard
-                  key={invite._id}
-                  invite={{
-                    title: invite.title,
-                    category: invite.category,
-                    invitedBy: invite.creator.username,
-                  }}
-                  getInitials={getInitials}
-                  onAccept={() => handleAccept(invite)}
-                  onDecline={() => handleDecline(invite)}
-                />
-              ))}
-            </div>
-          )}
-        </CardWrapper>
-      </div>
+            <button
+              onClick={handleLogout}
+              className="bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-600 transition"
+            >
+              Logout
+            </button>
+          </nav>
 
-      {/* Past Challenges */}
-      <CardWrapper
-        shadow="shadow-[0_0_14px_rgba(0,0,0,0.2)]"
-        className="mt-8 p-4"
-      >
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">
-          Past Challenges
-        </h2>
-        {pastChallenges.length === 0 ? (
-          <p className="text-gray-500 italic">No past challenges yet</p>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-4">
-            {pastChallenges.map((challenge) => (
-              <PastChallengeCard
-                key={challenge._id}
-                title={challenge.title}
-                category={challenge.category}
-                progress={challenge.duration}
-                total={challenge.duration}
-                status={
-                  challenge.status === "completed" ? "Completed" : "Failed"
-                }
-                onClick={() => {
-                  setSelectedChallenge(challenge); // set the clicked challenge
-                  setModal("details"); // open ChallengeDetails modal
-                }}
-              />
-            ))}
+          {/* Create Challenge Button */}
+          <button
+            onClick={() => setModal("create")}
+            className="w-full bg-[#4CAF50] text-white font-semibold py-3 rounded-2xl hover:bg-green-600 transition"
+          >
+            + Create New Challenge
+          </button>
+
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            {/* Active Challenges */}
+            <CardWrapper className="lg:col-span-2">
+              <h2 className="text-lg font-semibold mb-4 text-gray-700">
+                Active Challenges ({activeChallenges.length})
+              </h2>
+              {activeChallenges.length === 0 ? (
+                <p className="text-gray-500 italic">No active challenges yet</p>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {activeChallenges.map((challenge) => (
+                    <ChallengeCard
+                      key={challenge._id}
+                      title={challenge.title}
+                      category={challenge.category}
+                      total={challenge.duration}
+                      days={Array(challenge.duration).fill("upcoming")}
+                      onOpenDetails={() => {
+                        setSelectedChallenge(challenge);
+                        setModal("details");
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardWrapper>
+
+            {/* Invitations */}
+            <CardWrapper>
+              <h2 className="text-lg font-semibold mb-4 text-gray-700">
+                Incoming Invitations ({invitations.length})
+              </h2>
+              {invitations.length === 0 ? (
+                <p className="text-gray-500 italic">No invitations yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {invitations.map((invite) => (
+                    <InvitationCard
+                      key={invite._id}
+                      invite={{
+                        title: invite.title,
+                        category: invite.category,
+                        invitedBy: invite.creator.username,
+                      }}
+                      getInitials={getInitials}
+                      onAccept={() => handleAccept(invite)}
+                      onDecline={() => handleDecline(invite)}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardWrapper>
           </div>
-        )}
-      </CardWrapper>
 
-      {/* Modals */}
-      {modal === "create" && (
-        <Modal onClose={() => setModal(null)}>
-          <CreateChallenge onClose={() => setModal(null)}
-             onChallengeCreated={(newChallenge) =>
-        setActiveChallenges((prev) => [...prev, newChallenge])
-             }
-            />
-        </Modal>
+          {/* Past Challenges */}
+          <CardWrapper
+            shadow="shadow-[0_0_14px_rgba(0,0,0,0.2)]"
+            className="mt-8 p-4"
+          >
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              Past Challenges
+            </h2>
+            {pastChallenges.length === 0 ? (
+              <p className="text-gray-500 italic">No past challenges yet</p>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-4">
+                {pastChallenges.map((challenge) => (
+                  <PastChallengeCard
+                    key={challenge._id}
+                    title={challenge.title}
+                    category={challenge.category}
+                    progress={challenge.duration}
+                    total={challenge.duration}
+                    status={
+                      challenge.status === "completed" ? "Completed" : "Failed"
+                    }
+                    onClick={() => {
+                      setSelectedChallenge(challenge);
+                      setModal("details");
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </CardWrapper>
+
+          {/* Modals */}
+          {modal === "create" && (
+            <Modal onClose={() => setModal(null)}>
+              <CreateChallenge
+                onClose={() => setModal(null)}
+                onChallengeCreated={(newChallenge) =>
+                  setActiveChallenges((prev) => [...prev, newChallenge])
+                }
+              />
+            </Modal>
+          )}
+          {modal === "details" && selectedChallenge && (
+            <Modal onClose={() => setModal(null)}>
+              <ChallengeDetails challenge={selectedChallenge} />
+            </Modal>
+          )}
+        </div>
       )}
-      {modal === "details" && selectedChallenge && (
-        <Modal onClose={() => setModal(null)}>
-          <ChallengeDetails challenge={selectedChallenge} />
-        </Modal>
-      )}
-    </div>
-    )}
     </>
   );
 }
