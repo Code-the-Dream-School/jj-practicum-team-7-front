@@ -12,6 +12,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(challenge.title);
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
 
   const fetchCheckIns = async () => {
     if (!challenge?._id) return;
@@ -405,7 +406,7 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
 
         {/* Check In Button */}
         <button
-          onClick={handleCheckIn}
+          onClick={() => setShowCheckInModal(true)}
           disabled={!canCheckIn || checkInLoading || challengeEnded}
           className={`w-full py-4 rounded-xl font-semibold text-lg transition mb-6 relative z-10 ${
             canCheckIn && !checkInLoading && !challengeEnded
@@ -423,6 +424,40 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
             ? "Check In Today"
             : "Already Checked In"}
         </button>
+
+        {/* Check In Confirmation Modal */}
+        {showCheckInModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            onClick={() => setShowCheckInModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-4">
+                Are you sure you want to check in today?
+              </h3>
+              <div className="flex gap-4">
+                <button
+                  onClick={async () => {
+                    setShowCheckInModal(false);
+                    await handleCheckIn();
+                  }}
+                  className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Yes, Check In
+                </button>
+                <button
+                  onClick={() => setShowCheckInModal(false)}
+                  className="flex-1 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <hr className="border-gray-300 border mt-2 mb-4" />
 
