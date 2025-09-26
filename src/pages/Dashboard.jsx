@@ -11,6 +11,7 @@ import Modal from "../components/Modal";
 import CardWrapper from "../components/CardWrapper";
 import FooterCard from "../components/FooterCard";
 import footerLogo from "../assets/footerLogo.png";
+import GlobalLeaderboard from "../components/GlobalLeaderboard";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -256,6 +257,14 @@ export default function Dashboard() {
             )}
           </CardWrapper>
 
+          {/* Global Leaderboard */}
+          <CardWrapper className="mt-8 p-4">
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              🏆 Global Leaderboard
+            </h2>
+            <GlobalLeaderboard />
+          </CardWrapper>
+          
           {/* Modals */}
           {modal === "create" && (
             <Modal onClose={() => setModal(null)}>
@@ -273,7 +282,7 @@ export default function Dashboard() {
             </Modal>
           )}
           {/* Footer */}
-      <FooterCard variant="dashboard" footerLogo={footerLogo} />
+          <FooterCard variant="dashboard" footerLogo={footerLogo} />
         </div>
       )}
     </>
