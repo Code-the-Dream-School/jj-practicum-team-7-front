@@ -267,7 +267,11 @@ export default function Dashboard() {
           )}
           {modal === "details" && selectedChallenge && (
             <Modal onClose={() => setModal(null)}>
-              <ChallengeDetails challenge={selectedChallenge} />
+              <ChallengeDetails
+                challenge={selectedChallenge}
+                onClose={() => setModal(null)}
+                currentUserId={user?._id}
+              />
             </Modal>
           )}
         </div>
