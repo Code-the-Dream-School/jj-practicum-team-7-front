@@ -3,7 +3,13 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import { deleteData, getData, patchData, postData } from "../util";
 
-const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
+const ChallengeDetails = ({
+  challenge,
+  onClose,
+  currentUserId,
+  onDelete,
+  refetchChallenges,
+}) => {
   const [checkInData, setCheckInData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
@@ -62,9 +68,11 @@ const ChallengeDetails = ({ challenge, onClose, currentUserId, onDelete }) => {
       await postData(`/challenges/${challenge._id}/checkins`);
       await fetchCheckIns();
       toast.success("Checked in successfully!");
+
+      refetchChallenges?.();
     } catch (err) {
       console.error("Error checking in", err);
-      toast.error("Failed to check in. Please try again.");
+      toast.error("Error checking in");
     } finally {
       setCheckInLoading(false);
     }
