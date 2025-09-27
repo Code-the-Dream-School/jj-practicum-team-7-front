@@ -262,7 +262,7 @@ export default function Dashboard() {
               <CreateChallenge
                 onClose={() => setModal(null)}
                 onChallengeCreated={(newChallenge) =>
-                  setActiveChallenges((prev) => [...prev, newChallenge])
+                  fetchChallenges()
                 }
               />
             </Modal>
