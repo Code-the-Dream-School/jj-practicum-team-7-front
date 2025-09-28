@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [invitations, setInvitations] = useState([]);
   const [modal, setModal] = useState(null); // "create" | "details" | null
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [challengeProgress, setChallengeProgress] = useState({});
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -28,6 +29,19 @@ export default function Dashboard() {
     return parts.length === 1
       ? parts[0].slice(0, 2).toUpperCase()
       : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const fetchChallengeProgress = async (challengeId) => {
+    try {
+      const res = await getData(`/challenges/${challengeId}/checkins`);
+      return res;
+    } catch (err) {
+      console.error(
+        `Error fetching progress for challenge ${challengeId}:`,
+        err
+      );
+      return null;
+    }
   };
 
   // Fetch challenges for logged-in user
@@ -77,6 +91,18 @@ export default function Dashboard() {
       setActiveChallenges(active);
       setPastChallenges(past);
       setInvitations(invites);
+
+      // Fetch progress data for ALL challenges (active and past)
+      const progressData = {};
+      const allChallenges = [...active, ...past];
+
+      for (const challenge of allChallenges) {
+        const progress = await fetchChallengeProgress(challenge._id);
+        if (progress) {
+          progressData[challenge._id] = progress;
+        }
+      }
+      setChallengeProgress(progressData);
     } catch (err) {
       console.error("Failed to fetch challenges:", err);
     } finally {
@@ -89,6 +115,51 @@ export default function Dashboard() {
       fetchChallenges();
     }
   }, [user]);
+
+  // Generate days array with proper status for ChallengeCard
+  const generateDaysArray = (challenge) => {
+    const progress = challengeProgress[challenge._id];
+    const duration = challenge.duration;
+
+    if (!progress) {
+      // No progress data yet, return all upcoming
+      return Array(duration).fill("upcoming");
+    }
+
+    const daysArray = [];
+    const checkedDays = progress.checkedDays || [];
+    const missedDays = progress.missedDays || [];
+    const currentDay = progress.currentDay > 0 ? progress.currentDay : 1;
+
+    for (let day = 1; day <= duration; day++) {
+      if (checkedDays.includes(day)) {
+        daysArray.push("checked");
+      } else if (missedDays.includes(day)) {
+        daysArray.push("missed");
+      } else if (day === currentDay) {
+        daysArray.push("current");
+      } else if (day > currentDay) {
+        daysArray.push("future");
+      } else {
+        daysArray.push("past");
+      }
+    }
+
+    return daysArray;
+  };
+
+  // Calculate current day for display
+  const getCurrentDay = (challenge) => {
+    const progress = challengeProgress[challenge._id];
+    return progress?.currentDay > 0 ? progress.currentDay : 1;
+  };
+
+  // Calculate checked days count for any challenge
+  const getCheckedDaysCount = (challenge) => {
+    const progress = challengeProgress[challenge._id];
+    if (!progress || !progress.checkedDays) return 0;
+    return progress.checkedDays.length;
+  };
 
   // ACCEPT: remove from invitations, add to active challenges
   const handleAccept = async (challenge) => {
@@ -105,6 +176,15 @@ export default function Dashboard() {
         if (exists) return prev;
         return [...prev, updatedChallenge].filter((c) => c && c._id);
       });
+
+      // Fetch progress for the newly accepted challenge
+      const progress = await fetchChallengeProgress(challenge._id);
+      if (progress) {
+        setChallengeProgress((prev) => ({
+          ...prev,
+          [challenge._id]: progress,
+        }));
+      }
     } catch (err) {
       console.error("Failed to accept challenge:", err);
     }
@@ -180,19 +260,27 @@ export default function Dashboard() {
                 <p className="text-gray-500 italic">No active challenges yet</p>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
-                  {activeChallenges.map((challenge) => (
-                    <ChallengeCard
-                      key={challenge._id}
-                      title={challenge.title}
-                      category={challenge.category}
-                      total={challenge.duration}
-                      days={Array(challenge.duration).fill("upcoming")}
-                      onOpenDetails={() => {
-                        setSelectedChallenge(challenge);
-                        setModal("details");
-                      }}
-                    />
-                  ))}
+                  {activeChallenges.map((challenge) => {
+                    const daysArray = generateDaysArray(challenge);
+                    const currentDay = getCurrentDay(challenge);
+                    const checkedDays = getCheckedDaysCount(challenge);
+
+                    return (
+                      <ChallengeCard
+                        key={challenge._id}
+                        title={challenge.title}
+                        category={challenge.category}
+                        total={challenge.duration}
+                        days={daysArray}
+                        currentDay={currentDay}
+                        checkedDaysCount={checkedDays}
+                        onOpenDetails={() => {
+                          setSelectedChallenge(challenge);
+                          setModal("details");
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </CardWrapper>
@@ -236,22 +324,28 @@ export default function Dashboard() {
               <p className="text-gray-500 italic">No past challenges yet</p>
             ) : (
               <div className="grid md:grid-cols-3 gap-4">
-                {pastChallenges.map((challenge) => (
-                  <PastChallengeCard
-                    key={challenge._id}
-                    title={challenge.title}
-                    category={challenge.category}
-                    progress={challenge.duration}
-                    total={challenge.duration}
-                    status={
-                      challenge.status === "completed" ? "Completed" : "Failed"
-                    }
-                    onClick={() => {
-                      setSelectedChallenge(challenge);
-                      setModal("details");
-                    }}
-                  />
-                ))}
+                {pastChallenges.map((challenge) => {
+                  const checkedDays = getCheckedDaysCount(challenge);
+
+                  return (
+                    <PastChallengeCard
+                      key={challenge._id}
+                      title={challenge.title}
+                      category={challenge.category}
+                      progress={checkedDays}
+                      total={challenge.duration}
+                      status={
+                        challenge.status === "completed"
+                          ? "Completed"
+                          : "Failed"
+                      }
+                      onClick={() => {
+                        setSelectedChallenge(challenge);
+                        setModal("details");
+                      }}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardWrapper>
@@ -261,19 +355,23 @@ export default function Dashboard() {
             <Modal onClose={() => setModal(null)}>
               <CreateChallenge
                 onClose={() => setModal(null)}
-                onChallengeCreated={(newChallenge) =>
-                  setActiveChallenges((prev) => [...prev, newChallenge])
-                }
+                onChallengeCreated={(newChallenge) => fetchChallenges()}
               />
             </Modal>
           )}
           {modal === "details" && selectedChallenge && (
             <Modal onClose={() => setModal(null)}>
-              <ChallengeDetails challenge={selectedChallenge} />
+              <ChallengeDetails
+                challenge={selectedChallenge}
+                onClose={() => setModal(null)}
+                currentUserId={user?._id}
+                onDelete={fetchChallenges}
+                refetchChallenges={fetchChallenges}
+              />
             </Modal>
           )}
           {/* Footer */}
-      <FooterCard variant="dashboard" footerLogo={footerLogo} />
+          <FooterCard variant="dashboard" footerLogo={footerLogo} />
         </div>
       )}
     </>
