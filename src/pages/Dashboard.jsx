@@ -92,9 +92,11 @@ export default function Dashboard() {
       setPastChallenges(past);
       setInvitations(invites);
 
-      // Fetch progress data for active challenges
+      // Fetch progress data for ALL challenges (active and past)
       const progressData = {};
-      for (const challenge of active) {
+      const allChallenges = [...active, ...past];
+
+      for (const challenge of allChallenges) {
         const progress = await fetchChallengeProgress(challenge._id);
         if (progress) {
           progressData[challenge._id] = progress;
@@ -150,6 +152,13 @@ export default function Dashboard() {
   const getCurrentDay = (challenge) => {
     const progress = challengeProgress[challenge._id];
     return progress?.currentDay > 0 ? progress.currentDay : 1;
+  };
+
+  // Calculate checked days count for any challenge
+  const getCheckedDaysCount = (challenge) => {
+    const progress = challengeProgress[challenge._id];
+    if (!progress || !progress.checkedDays) return 0;
+    return progress.checkedDays.length;
   };
 
   // ACCEPT: remove from invitations, add to active challenges
@@ -254,9 +263,7 @@ export default function Dashboard() {
                   {activeChallenges.map((challenge) => {
                     const daysArray = generateDaysArray(challenge);
                     const currentDay = getCurrentDay(challenge);
-                    const checkedDays = daysArray.filter(
-                      (d) => d === "checked"
-                    ).length;
+                    const checkedDays = getCheckedDaysCount(challenge);
 
                     return (
                       <ChallengeCard
@@ -317,22 +324,28 @@ export default function Dashboard() {
               <p className="text-gray-500 italic">No past challenges yet</p>
             ) : (
               <div className="grid md:grid-cols-3 gap-4">
-                {pastChallenges.map((challenge) => (
-                  <PastChallengeCard
-                    key={challenge._id}
-                    title={challenge.title}
-                    category={challenge.category}
-                    progress={challenge.duration}
-                    total={challenge.duration}
-                    status={
-                      challenge.status === "completed" ? "Completed" : "Failed"
-                    }
-                    onClick={() => {
-                      setSelectedChallenge(challenge);
-                      setModal("details");
-                    }}
-                  />
-                ))}
+                {pastChallenges.map((challenge) => {
+                  const checkedDays = getCheckedDaysCount(challenge);
+
+                  return (
+                    <PastChallengeCard
+                      key={challenge._id}
+                      title={challenge.title}
+                      category={challenge.category}
+                      progress={checkedDays}
+                      total={challenge.duration}
+                      status={
+                        challenge.status === "completed"
+                          ? "Completed"
+                          : "Failed"
+                      }
+                      onClick={() => {
+                        setSelectedChallenge(challenge);
+                        setModal("details");
+                      }}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardWrapper>
