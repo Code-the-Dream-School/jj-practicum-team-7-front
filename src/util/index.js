@@ -3,6 +3,20 @@ import axios from "axios";
 const API = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/v1`,
 });
+
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // GET with params
 const getData = async (endpoint, params = {}) => {
   try {
@@ -29,7 +43,7 @@ const getAllData = async (endpoint) => {
   }
 };
 
-// POST 
+// POST
 const postData = async (endpoint, body = {}, config = {}) => {
   try {
     const token = localStorage.getItem("authToken");
@@ -63,5 +77,16 @@ const patchData = async (endpoint, body = {}, config = {}) => {
   }
 };
 
-export { API, getData, getAllData, postData, patchData };
+// DELETE
+const deleteData = async (endpoint) => {
+  try {
+    const res = await API.delete(endpoint);
+    return res.data;
+  } catch (error) {
+    console.error(error, `error - deleteData in ${endpoint} route`);
+    throw error;
+  }
+};
+
+export { API, getData, getAllData, postData, patchData, deleteData };
 
