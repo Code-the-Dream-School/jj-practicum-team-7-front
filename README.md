@@ -97,7 +97,7 @@ This project includes several NPM scripts to facilitate development, testing, an
 
 ## Presentation
 
-- [Final Presentation Slides](#)
+- [Final Presentation Slides](https://docs.google.com/presentation/d/1kykGYzOzM5hgyRbFoUbjIz8QrEG_wX2d/edit?slide=id.p1#slide=id.p1)
 
 ## Authors
 
