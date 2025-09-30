@@ -78,6 +78,13 @@ This project includes several NPM scripts to facilitate development, testing, an
 - **🎨 Responsive Interface** – smooth on desktop and mobile
 - **📊 Manage Challenges** – edit, invite or leave easily
 
+![Checkins Screenshot](./images/checkins.png)
+![Create a challenge Screenshot](./images/create-challenge.png)
+![Dashboard Screenshot](./images/dashboard.png)
+![Leadershipboard Screenshot](./images/leadershipboard.png)
+![Signin Screenshot](./images/signin.png)
+
+
 ## Quick Start
 
 ### Setup
